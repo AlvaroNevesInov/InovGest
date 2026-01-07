@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Entity extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'type',
         'number',
@@ -32,6 +35,11 @@ class Entity extends Model
     public function country()
     {
         return $this->belongsTo(Country::class);
+    }
+
+    public function contacts()
+    {
+        return $this->hasMany(Contact::class);
     }
 
     public function scopeClients($query)

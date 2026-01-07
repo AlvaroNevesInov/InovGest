@@ -26,6 +26,9 @@ Route::middleware('auth')->group(function () {
     // Entities (Clientes/Fornecedores)
     Route::resource('entities', App\Http\Controllers\EntityController::class);
 
+    // Contacts
+    Route::resource('contacts', App\Http\Controllers\ContactController::class);
+
     // Settings
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::resource('countries', App\Http\Controllers\CountryController::class)

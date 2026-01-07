@@ -1,33 +1,14 @@
 {
-
-  "$schema": "https://ui.shadcn.com/schema.json",
-
+  "$schema": "https://shadcn-vue.com/schema.json",
   "style": "new-york",
-
-  "tailwind": {
-
-    "config": "tailwind.config.js",
-
-    "css": "resources/css/app.css",
-
-    "baseColor": "zinc"
-
-  },
-
-  "framework": "vue",
-
   "typescript": false,
-
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "resources/css/app.css",
+    "baseColor": "zinc"
+  },
   "aliases": {
-
-    "components": "resources/js/Components/ui",
-
-    "utils": "resources/js/lib",
-
-    "ui": "resources/js/Components/ui",
-
-    "lib": "resources/js/lib"
-
+    "components": "resources/js/Components",
+    "utils": "resources/js/lib"
   }
-
 }

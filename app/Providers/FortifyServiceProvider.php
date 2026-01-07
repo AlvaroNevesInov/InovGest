@@ -18,96 +18,66 @@ use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 
 use Laravel\Fortify\Fortify;
 
-
-
 class FortifyServiceProvider extends ServiceProvider
-
 {
-
     /**
-
      * Register any application services.
-
      */
 
     public function register(): void
-
     {
-
         $this->app->singleton(
-
-            \Laravel\Fortify\Contracts\ConfirmPasswordViewResponse::class,
-
-            \App\Http\Responses\ConfirmPasswordViewResponse::class
-
+            \Laravel\Fortify\Contracts\LoginResponse::class,
+            \App\Http\Responses\LoginResponse::class
         );
 
+        $this->app->singleton(
+            \Laravel\Fortify\Contracts\ConfirmPasswordViewResponse::class,
+            \App\Http\Responses\ConfirmPasswordViewResponse::class
+        );
     }
 
-
-
     /**
-
      * Bootstrap any application services.
-
      */
 
     public function boot(): void
-
     {
 
         Fortify::createUsersUsing(CreateNewUser::class);
-
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
-
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
-
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
-
         Fortify::redirectUserForTwoFactorAuthenticationUsing(RedirectIfTwoFactorAuthenticatable::class);
-
         // Login view
 
         Fortify::loginView(function () {
-
             return Inertia::render('Auth/Login', [
-
                 'canResetPassword' => Route::has('password.request'),
-
                 'status' => session('status'),
-
             ]);
 
         });
 
-
-
         // Two Factor Authentication Challenge view
 
         Fortify::twoFactorChallengeView(function () {
-
             return Inertia::render('Auth/TwoFactorChallenge');
-
         });
 
         $this->app->singleton(
 
             \Laravel\Fortify\Contracts\PasswordConfirmedResponse::class,
-
             \App\Http\Responses\PasswordConfirmedResponse::class
 
         );
 
-
-
         $this->app->singleton(
 
             \Laravel\Fortify\Contracts\FailedPasswordConfirmationResponse::class,
-
             \App\Http\Responses\FailedPasswordConfirmationResponse::class
 
         );
-
 
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());

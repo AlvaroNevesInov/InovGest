@@ -22,6 +22,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Entities (Clientes/Fornecedores)
+    Route::resource('entities', App\Http\Controllers\EntityController::class);
+
+    // Settings
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::resource('countries', App\Http\Controllers\CountryController::class)
+            ->except(['show', 'create', 'edit']);
+        Route::resource('contact-functions', App\Http\Controllers\ContactFunctionController::class)
+            ->except(['show', 'create', 'edit']);
+        Route::resource('calendar-types', App\Http\Controllers\CalendarTypeController::class)
+            ->except(['show', 'create', 'edit']);
+        Route::resource('calendar-actions', App\Http\Controllers\CalendarActionController::class)
+            ->except(['show', 'create', 'edit']);
+        Route::resource('vat-rates', App\Http\Controllers\VatRateController::class)
+            ->except(['show', 'create', 'edit']);
+        Route::resource('companies', App\Http\Controllers\CompanyController::class);
+    });
 });
 
 require __DIR__.'/auth.php';

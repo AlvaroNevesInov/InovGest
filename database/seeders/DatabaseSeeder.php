@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             CountrySeeder::class,
             VatRateSeeder::class,
             ContactFunctionSeeder::class,
+            ArticleSeeder::class,
         ]);
 
         // Create sample entities

@@ -41,6 +41,7 @@ Route::middleware('auth')->group(function () {
             ->except(['show', 'create', 'edit']);
         Route::resource('vat-rates', App\Http\Controllers\VatRateController::class)
             ->except(['show', 'create', 'edit']);
+        Route::resource('articles', App\Http\Controllers\ArticleController::class);
         Route::resource('companies', App\Http\Controllers\CompanyController::class);
     });
 });

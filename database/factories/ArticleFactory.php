@@ -16,7 +16,21 @@ class ArticleFactory extends Factory
      */
     public function definition(): array
     {
-        static $refNumber = 1;
+        static $refNumber = null;
+        static $initialized = false;
+
+        // Initialize refNumber from database only once
+        if (!$initialized) {
+            $lastArticle = \App\Models\Article::orderBy('id', 'desc')->first();
+            if ($lastArticle && preg_match('/ART-(\d+)/', $lastArticle->reference, $matches)) {
+                $refNumber = (int)$matches[1];
+            } else {
+                $refNumber = 0;
+            }
+            $initialized = true;
+        }
+
+        $refNumber++;
 
         $productNames = [
             'Computador Portátil', 'Monitor LED', 'Teclado Mecânico', 'Rato Wireless',
@@ -26,12 +40,16 @@ class ArticleFactory extends Factory
             'Candeeiro LED', 'Quadro Branco', 'Destruidor de Papel'
         ];
 
+        // Try to use existing VAT rates, otherwise create one
+        $vatRateId = \App\Models\VatRate::inRandomOrder()->first()?->id
+                     ?? \App\Models\VatRate::factory()->create()->id;
+
         return [
-            'reference' => 'ART-' . str_pad($refNumber++, 5, '0', STR_PAD_LEFT),
+            'reference' => 'ART-' . str_pad($refNumber, 5, '0', STR_PAD_LEFT),
             'name' => fake()->randomElement($productNames),
             'description' => fake()->optional(0.7)->paragraph(),
             'price' => fake()->randomFloat(2, 10, 2000),
-            'vat_rate_id' => \App\Models\VatRate::factory(),
+            'vat_rate_id' => $vatRateId,
             'photo' => null,
             'notes' => fake()->optional(0.3)->sentence(),
             'active' => true,

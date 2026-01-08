@@ -86,6 +86,12 @@ class DatabaseSeeder extends Seeder
             }
         }
 
+        // Seed proposals and orders
+        $this->call([
+            ProposalSeeder::class,
+            OrderSeeder::class,
+        ]);
+
         $this->command->info('Database seeding completed successfully!');
     }
 }

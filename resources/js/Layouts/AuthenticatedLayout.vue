@@ -57,6 +57,30 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Contactos
                                 </NavLink>
+                                <NavLink
+                                    :href="route('proposals.index')"
+                                    :active="route().current('proposals.*')"
+                                >
+                                    Propostas
+                                </NavLink>
+                                <NavLink
+                                    :href="route('orders.index')"
+                                    :active="route().current('orders.*')"
+                                >
+                                    Encomendas
+                                </NavLink>
+                                <NavLink
+                                    :href="route('settings.articles.index')"
+                                    :active="route().current('settings.articles.*')"
+                                >
+                                    Artigos
+                                </NavLink>
+                                <NavLink
+                                    :href="route('documents.index')"
+                                    :active="route().current('documents.*')"
+                                >
+                                    Documentos
+                                </NavLink>
                             </div>
                         </div>
 
@@ -181,6 +205,30 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('contacts.*')"
                         >
                             Contactos
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('proposals.index')"
+                            :active="route().current('proposals.*')"
+                        >
+                            Propostas
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('orders.index')"
+                            :active="route().current('orders.*')"
+                        >
+                            Encomendas
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('settings.articles.index')"
+                            :active="route().current('settings.articles.*')"
+                        >
+                            Artigos
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('documents.index')"
+                            :active="route().current('documents.*')"
+                        >
+                            Documentos
                         </ResponsiveNavLink>
                     </div>
 

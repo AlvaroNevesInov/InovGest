@@ -29,6 +29,32 @@ Route::middleware('auth')->group(function () {
     // Contacts
     Route::resource('contacts', App\Http\Controllers\ContactController::class);
 
+    // Proposals
+    Route::resource('proposals', App\Http\Controllers\ProposalController::class);
+    Route::post('proposals/{proposal}/close', [App\Http\Controllers\ProposalController::class, 'close'])
+        ->name('proposals.close');
+    Route::post('proposals/{proposal}/convert-to-order', [App\Http\Controllers\ProposalController::class, 'convertToOrder'])
+        ->name('proposals.convertToOrder');
+    Route::get('proposals/{proposal}/pdf', [App\Http\Controllers\ProposalController::class, 'generatePdf'])
+        ->name('proposals.pdf');
+
+    // Orders (Encomendas)
+    Route::resource('orders', App\Http\Controllers\OrderController::class);
+    Route::post('orders/{order}/close', [App\Http\Controllers\OrderController::class, 'close'])
+        ->name('orders.close');
+    Route::get('orders/{order}/pdf', [App\Http\Controllers\OrderController::class, 'generatePdf'])
+        ->name('orders.pdf');
+
+    // Documents
+    Route::get('documents', [App\Http\Controllers\DocumentController::class, 'index'])
+        ->name('documents.index');
+    Route::post('documents', [App\Http\Controllers\DocumentController::class, 'store'])
+        ->name('documents.store');
+    Route::get('documents/{document}/download', [App\Http\Controllers\DocumentController::class, 'download'])
+        ->name('documents.download');
+    Route::delete('documents/{document}', [App\Http\Controllers\DocumentController::class, 'destroy'])
+        ->name('documents.destroy');
+
     // Settings
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::resource('countries', App\Http\Controllers\CountryController::class)

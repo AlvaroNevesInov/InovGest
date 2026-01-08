@@ -22,6 +22,12 @@ class ArticleSeeder extends Seeder
             return;
         }
 
+        // Check if articles already exist
+        if (Article::count() > 0) {
+            $this->command->info('Articles already exist. Skipping seeding.');
+            return;
+        }
+
         $articles = [
             [
                 'reference' => 'ART-00001',

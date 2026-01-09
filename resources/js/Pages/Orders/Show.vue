@@ -21,6 +21,10 @@ const formatDate = (date) => {
     return new Date(date).toLocaleDateString('pt-PT');
 };
 
+const downloadPdf = () => {
+    window.location.href = route('orders.pdf', props.order.id);
+};
+
 const closeOrder = () => {
     if (confirm('Tem a certeza que deseja fechar esta encomenda?')) {
         router.post(route('orders.close', props.order.id));
@@ -119,7 +123,7 @@ const deleteOrder = () => {
                                             <p v-if="line.description" class="text-sm text-gray-500">{{ line.description }}</p>
                                         </div>
                                     </TableCell>
-                                    <TableCell class="text-right">{{ line.quantity }}</TableCell>
+                                    <TableCell class="text-right">{{ Math.floor(line.quantity) }}</TableCell>
                                     <TableCell class="text-right">{{ formatPrice(line.unit_price) }}</TableCell>
                                     <TableCell class="text-right">{{ line.discount_percentage }}%</TableCell>
                                     <TableCell class="text-right">{{ line.vat_rate }}%</TableCell>
@@ -160,11 +164,9 @@ const deleteOrder = () => {
                     </CardHeader>
                     <CardContent>
                         <div class="flex flex-wrap gap-4">
-                            <Link :href="route('orders.pdf', order.id)">
-                                <Button variant="default">
-                                    Descarregar PDF
-                                </Button>
-                            </Link>
+                            <Button variant="default" @click="downloadPdf">
+                                Descarregar PDF
+                            </Button>
 
                             <Link v-if="order.status === 'draft'" :href="route('orders.edit', order.id)">
                                 <Button variant="outline">Editar Encomenda</Button>

@@ -116,7 +116,7 @@ class ProposalController extends Controller
      */
     public function show(Proposal $proposal)
     {
-        $proposal->load(['entity.country', 'lines.article', 'lines.vatRate', 'lines.supplier']);
+        $proposal->load(['entity.country', 'lines.article', 'lines.supplier']);
 
         return Inertia::render('Proposals/Show', [
             'proposal' => $proposal,
@@ -261,6 +261,15 @@ class ProposalController extends Controller
             'company' => $company,
         ]);
 
-        return $pdf->download('Proposta_' . $proposal->number . '.pdf');
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'Proposta_' . $proposal->number . '.pdf';
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, $filename, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 }

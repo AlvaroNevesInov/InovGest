@@ -117,11 +117,12 @@ const formatPrice = (price) => {
                                             </TableCell>
                                             <TableCell class="text-right">
                                                 <div class="flex justify-end gap-2">
-                                                    <Link :href="route('proposals.pdf', proposal.id)">
-                                                        <Button variant="outline" size="sm">
-                                                            PDF
-                                                        </Button>
-                                                    </Link>
+                                                    <a
+                                                        :href="route('proposals.pdf', proposal.id)"
+                                                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
+                                                    >
+                                                        PDF
+                                                    </a>
                                                     <Link :href="route('proposals.show', proposal.id)">
                                                         <Button variant="secondary" size="sm">
                                                             Ver
@@ -168,11 +169,12 @@ const formatPrice = (price) => {
                                             </TableCell>
                                             <TableCell class="text-right">
                                                 <div class="flex justify-end gap-2">
-                                                    <Link :href="route('orders.pdf', order.id)">
-                                                        <Button variant="outline" size="sm">
-                                                            PDF
-                                                        </Button>
-                                                    </Link>
+                                                    <a
+                                                        :href="route('orders.pdf', order.id)"
+                                                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
+                                                    >
+                                                        PDF
+                                                    </a>
                                                     <Link :href="route('orders.show', order.id)">
                                                         <Button variant="secondary" size="sm">
                                                             Ver

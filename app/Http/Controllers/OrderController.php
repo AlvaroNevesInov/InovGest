@@ -114,7 +114,7 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        $order->load(['entity.country', 'proposal', 'lines.article', 'lines.vatRate', 'lines.supplier']);
+        $order->load(['entity.country', 'proposal', 'lines.article', 'lines.supplier']);
 
         return Inertia::render('Orders/Show', [
             'order' => $order,
@@ -253,6 +253,15 @@ class OrderController extends Controller
             'company' => $company,
         ]);
 
-        return $pdf->download('Encomenda_' . $order->number . '.pdf');
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'Encomenda_' . $order->number . '.pdf';
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, $filename, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 }

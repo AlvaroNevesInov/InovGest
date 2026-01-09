@@ -21,6 +21,10 @@ const formatDate = (date) => {
     return new Date(date).toLocaleDateString('pt-PT');
 };
 
+const downloadPdf = () => {
+    window.location.href = route('proposals.pdf', props.proposal.id);
+};
+
 const closeProposal = () => {
     if (confirm('Tem a certeza que deseja fechar esta proposta?')) {
         router.post(route('proposals.close', props.proposal.id));
@@ -129,7 +133,7 @@ const deleteProposal = () => {
                                             <p v-if="line.description" class="text-sm text-gray-500">{{ line.description }}</p>
                                         </div>
                                     </TableCell>
-                                    <TableCell class="text-right">{{ line.quantity }}</TableCell>
+                                    <TableCell class="text-right">{{ Math.floor(line.quantity) }}</TableCell>
                                     <TableCell class="text-right">{{ formatPrice(line.unit_price) }}</TableCell>
                                     <TableCell class="text-right">{{ line.discount_percentage }}%</TableCell>
                                     <TableCell class="text-right">{{ line.vat_rate }}%</TableCell>
@@ -170,11 +174,9 @@ const deleteProposal = () => {
                     </CardHeader>
                     <CardContent>
                         <div class="flex flex-wrap gap-4">
-                            <Link :href="route('proposals.pdf', proposal.id)">
-                                <Button variant="default">
-                                    Descarregar PDF
-                                </Button>
-                            </Link>
+                            <Button variant="default" @click="downloadPdf">
+                                Descarregar PDF
+                            </Button>
 
                             <Link v-if="proposal.status === 'draft'" :href="route('proposals.edit', proposal.id)">
                                 <Button variant="outline">Editar Proposta</Button>

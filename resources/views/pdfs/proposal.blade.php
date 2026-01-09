@@ -270,7 +270,7 @@
                                 <br><small style="color: #666;">{{ $line->description }}</small>
                             @endif
                         </td>
-                        <td class="text-center">{{ number_format($line->quantity, 2, ',', '.') }}</td>
+                        <td class="text-center">{{ number_format($line->quantity, 0, ',', '.') }}</td>
                         <td class="text-right">{{ number_format($line->unit_price, 2, ',', '.') }} €</td>
                         <td class="text-right">
                             @if($line->discount > 0)

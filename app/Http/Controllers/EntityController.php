@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Entity;
 use App\Models\Country;
+use App\Services\ViesService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -138,6 +139,21 @@ class EntityController extends Controller
         $entity->update($validated);
 
         return redirect()->route('entities.index')->with('success', 'Entidade atualizada com sucesso!');
+    }
+
+    /**
+     * Validate NIF with VIES and get company data.
+     */
+    public function validateVies(Request $request, ViesService $viesService)
+    {
+        $request->validate([
+            'nif' => 'required|string',
+        ]);
+
+        $extracted = $viesService->extractCountryCode($request->nif);
+        $result = $viesService->validate($extracted['country_code'], $extracted['vat_number']);
+
+        return response()->json($result);
     }
 
     /**

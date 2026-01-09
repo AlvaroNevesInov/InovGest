@@ -25,6 +25,8 @@ Route::middleware('auth')->group(function () {
 
     // Entities (Clientes/Fornecedores)
     Route::resource('entities', App\Http\Controllers\EntityController::class);
+    Route::post('entities/validate-vies', [App\Http\Controllers\EntityController::class, 'validateVies'])
+        ->name('entities.validateVies');
 
     // Contacts
     Route::resource('contacts', App\Http\Controllers\ContactController::class);

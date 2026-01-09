@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasEncryptedAttributes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Entity extends Model
 {
-    use HasFactory;
+    use HasFactory, HasEncryptedAttributes;
 
     protected $fillable = [
         'type',
@@ -31,6 +32,14 @@ class Entity extends Model
         'rgpd_consent' => 'boolean',
         'active' => 'boolean',
     ];
+
+    /**
+     * Get the list of attributes that should be encrypted.
+     */
+    protected function getEncryptedAttributes(): array
+    {
+        return ['nif', 'email', 'phone', 'mobile'];
+    }
 
     public function country()
     {

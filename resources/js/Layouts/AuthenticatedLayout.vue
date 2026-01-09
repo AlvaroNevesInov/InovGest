@@ -39,48 +39,82 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Dashboard
                                 </NavLink>
+
+                                <!-- Dropdown for Comercial -->
+                                <Dropdown align="left" width="48">
+                                    <template #trigger>
+                                        <button class="inline-flex items-center px-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700 focus:outline-none focus:text-gray-700 dark:focus:text-gray-300 focus:border-gray-300 dark:focus:border-gray-700 transition duration-150 ease-in-out h-16">
+                                            Comercial
+                                            <svg class="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </template>
+                                    <template #content>
+                                        <DropdownLink :href="route('entities.index') + '?type=client'">Clientes</DropdownLink>
+                                        <DropdownLink :href="route('entities.index') + '?type=supplier'">Fornecedores</DropdownLink>
+                                        <DropdownLink :href="route('contacts.index')">Contactos</DropdownLink>
+                                        <DropdownLink :href="route('proposals.index')">Propostas</DropdownLink>
+                                        <DropdownLink :href="route('orders.index')">Encomendas</DropdownLink>
+                                        <DropdownLink :href="route('supplier-orders.index')">Enc. Fornecedores</DropdownLink>
+                                        <DropdownLink :href="route('work-orders.index')">Ordens Trabalho</DropdownLink>
+                                    </template>
+                                </Dropdown>
+
+                                <!-- Dropdown for Financeiro -->
+                                <Dropdown align="left" width="48">
+                                    <template #trigger>
+                                        <button class="inline-flex items-center px-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700 focus:outline-none focus:text-gray-700 dark:focus:text-gray-300 focus:border-gray-300 dark:focus:border-gray-700 transition duration-150 ease-in-out h-16">
+                                            Financeiro
+                                            <svg class="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </template>
+                                    <template #content>
+                                        <DropdownLink :href="route('bank-accounts.index')">Contas Bancárias</DropdownLink>
+                                        <DropdownLink :href="route('client-accounts.index')">Conta Corrente</DropdownLink>
+                                        <DropdownLink :href="route('supplier-invoices.index')">Faturas Fornecedores</DropdownLink>
+                                    </template>
+                                </Dropdown>
+
                                 <NavLink
-                                    :href="route('entities.index') + '?type=client'"
-                                    :active="route().current('entities.*')"
+                                    :href="route('calendar.index')"
+                                    :active="route().current('calendar.*')"
                                 >
-                                    Clientes
+                                    Calendário
                                 </NavLink>
-                                <NavLink
-                                    :href="route('entities.index') + '?type=supplier'"
-                                    :active="route().current('entities.*')"
-                                >
-                                    Fornecedores
-                                </NavLink>
-                                <NavLink
-                                    :href="route('contacts.index')"
-                                    :active="route().current('contacts.*')"
-                                >
-                                    Contactos
-                                </NavLink>
-                                <NavLink
-                                    :href="route('proposals.index')"
-                                    :active="route().current('proposals.*')"
-                                >
-                                    Propostas
-                                </NavLink>
-                                <NavLink
-                                    :href="route('orders.index')"
-                                    :active="route().current('orders.*')"
-                                >
-                                    Encomendas
-                                </NavLink>
+
                                 <NavLink
                                     :href="route('settings.articles.index')"
                                     :active="route().current('settings.articles.*')"
                                 >
                                     Artigos
                                 </NavLink>
+
                                 <NavLink
                                     :href="route('documents.index')"
                                     :active="route().current('documents.*')"
                                 >
                                     Documentos
                                 </NavLink>
+
+                                <!-- Dropdown for Sistema -->
+                                <Dropdown align="right" width="48">
+                                    <template #trigger>
+                                        <button class="inline-flex items-center px-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700 focus:outline-none focus:text-gray-700 dark:focus:text-gray-300 focus:border-gray-300 dark:focus:border-gray-700 transition duration-150 ease-in-out h-16">
+                                            Sistema
+                                            <svg class="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </template>
+                                    <template #content>
+                                        <DropdownLink :href="route('users.index')">Utilizadores</DropdownLink>
+                                        <DropdownLink :href="route('roles.index')">Roles</DropdownLink>
+                                        <DropdownLink :href="route('activity-log.index')">Logs</DropdownLink>
+                                    </template>
+                                </Dropdown>
                             </div>
                         </div>
 
@@ -188,6 +222,9 @@ const showingNavigationDropdown = ref(false);
                         >
                             Dashboard
                         </ResponsiveNavLink>
+
+                        <!-- Comercial -->
+                        <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Comercial</div>
                         <ResponsiveNavLink
                             :href="route('entities.index') + '?type=client'"
                             :active="route().current('entities.*')"
@@ -219,6 +256,48 @@ const showingNavigationDropdown = ref(false);
                             Encomendas
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
+                            :href="route('supplier-orders.index')"
+                            :active="route().current('supplier-orders.*')"
+                        >
+                            Enc. Fornecedores
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('work-orders.index')"
+                            :active="route().current('work-orders.*')"
+                        >
+                            Ordens Trabalho
+                        </ResponsiveNavLink>
+
+                        <!-- Financeiro -->
+                        <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Financeiro</div>
+                        <ResponsiveNavLink
+                            :href="route('bank-accounts.index')"
+                            :active="route().current('bank-accounts.*')"
+                        >
+                            Contas Bancárias
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('client-accounts.index')"
+                            :active="route().current('client-accounts.*')"
+                        >
+                            Conta Corrente
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('supplier-invoices.index')"
+                            :active="route().current('supplier-invoices.*')"
+                        >
+                            Faturas Fornecedores
+                        </ResponsiveNavLink>
+
+                        <!-- Outros -->
+                        <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Outros</div>
+                        <ResponsiveNavLink
+                            :href="route('calendar.index')"
+                            :active="route().current('calendar.*')"
+                        >
+                            Calendário
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
                             :href="route('settings.articles.index')"
                             :active="route().current('settings.articles.*')"
                         >
@@ -229,6 +308,27 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('documents.*')"
                         >
                             Documentos
+                        </ResponsiveNavLink>
+
+                        <!-- Sistema -->
+                        <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Sistema</div>
+                        <ResponsiveNavLink
+                            :href="route('users.index')"
+                            :active="route().current('users.*')"
+                        >
+                            Utilizadores
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('roles.index')"
+                            :active="route().current('roles.*')"
+                        >
+                            Roles
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('activity-log.index')"
+                            :active="route().current('activity-log.*')"
+                        >
+                            Logs
                         </ResponsiveNavLink>
                     </div>
 

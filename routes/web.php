@@ -44,8 +44,47 @@ Route::middleware('auth')->group(function () {
     Route::resource('orders', App\Http\Controllers\OrderController::class);
     Route::post('orders/{order}/close', [App\Http\Controllers\OrderController::class, 'close'])
         ->name('orders.close');
+    Route::post('orders/{order}/convert-to-supplier-orders', [App\Http\Controllers\OrderController::class, 'convertToSupplierOrders'])
+        ->name('orders.convertToSupplierOrders');
     Route::get('orders/{order}/pdf', [App\Http\Controllers\OrderController::class, 'generatePdf'])
         ->name('orders.pdf');
+
+    // Supplier Orders (Encomendas a Fornecedores)
+    Route::resource('supplier-orders', App\Http\Controllers\SupplierOrderController::class);
+    Route::post('supplier-orders/{supplierOrder}/send', [App\Http\Controllers\SupplierOrderController::class, 'send'])
+        ->name('supplier-orders.send');
+    Route::get('supplier-orders/{supplierOrder}/pdf', [App\Http\Controllers\SupplierOrderController::class, 'generatePdf'])
+        ->name('supplier-orders.pdf');
+
+    // Work Orders (Ordens de Trabalho)
+    Route::resource('work-orders', App\Http\Controllers\WorkOrderController::class);
+
+    // Bank Accounts (Contas Bancárias)
+    Route::resource('bank-accounts', App\Http\Controllers\BankAccountController::class);
+
+    // Client Accounts (Conta Corrente Clientes)
+    Route::resource('client-accounts', App\Http\Controllers\ClientAccountController::class);
+
+    // Supplier Invoices (Faturas Fornecedores)
+    Route::resource('supplier-invoices', App\Http\Controllers\SupplierInvoiceController::class);
+    Route::post('supplier-invoices/{supplierInvoice}/mark-as-paid', [App\Http\Controllers\SupplierInvoiceController::class, 'markAsPaid'])
+        ->name('supplier-invoices.markAsPaid');
+    Route::get('supplier-invoices/{supplierInvoice}/download', [App\Http\Controllers\SupplierInvoiceController::class, 'download'])
+        ->name('supplier-invoices.download');
+
+    // Calendar (Calendário)
+    Route::resource('calendar', App\Http\Controllers\CalendarController::class);
+
+    // Users (Utilizadores)
+    Route::resource('users', App\Http\Controllers\UserController::class);
+
+    // Roles (Grupos de Permissões)
+    Route::resource('roles', App\Http\Controllers\RoleController::class)
+        ->except(['show', 'create', 'edit']);
+
+    // Activity Log (Logs de Atividade)
+    Route::get('activity-log', [App\Http\Controllers\ActivityLogController::class, 'index'])
+        ->name('activity-log.index');
 
     // Documents
     Route::get('documents', [App\Http\Controllers\DocumentController::class, 'index'])

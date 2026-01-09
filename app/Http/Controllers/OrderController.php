@@ -264,4 +264,61 @@ class OrderController extends Controller
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
+
+    /**
+     * Convert Order to Supplier Orders grouped by supplier.
+     */
+    public function convertToSupplierOrders(Order $order)
+    {
+        if (!$order->isClosed()) {
+            return back()->with('error', 'Apenas encomendas fechadas podem ser convertidas!');
+        }
+
+        // Check if order has lines with suppliers
+        if (!$order->lines()->whereNotNull('supplier_id')->exists()) {
+            return back()->with('error', 'Esta encomenda não tem linhas com fornecedores definidos!');
+        }
+
+        DB::beginTransaction();
+        try {
+            $supplierOrders = [];
+
+            // Group lines by supplier
+            $linesBySupplier = $order->lines()
+                ->whereNotNull('supplier_id')
+                ->with(['article', 'vatRate'])
+                ->get()
+                ->groupBy('supplier_id');
+
+            foreach ($linesBySupplier as $supplierId => $lines) {
+                // Create supplier order
+                $supplierOrder = \App\Models\SupplierOrder::create([
+                    'number' => 'SF' . str_pad((\App\Models\SupplierOrder::max('id') ?? 0) + 1, 6, '0', STR_PAD_LEFT),
+                    'order_date' => now(),
+                    'supplier_id' => $supplierId,
+                    'order_id' => $order->id,
+                    'status' => 'draft',
+                ]);
+
+                // Create supplier order lines
+                foreach ($lines as $line) {
+                    $supplierOrder->lines()->create([
+                        'article_id' => $line->article_id,
+                        'quantity' => $line->quantity,
+                        'unit_price' => $line->cost_price ?? $line->unit_price,
+                        'tax_rate' => $line->vatRate->rate ?? 0,
+                    ]);
+                }
+
+                $supplierOrders[] = $supplierOrder;
+            }
+
+            DB::commit();
+
+            return back()->with('success', count($supplierOrders) . ' encomenda(s) de fornecedor criada(s) com sucesso!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Erro ao criar encomendas de fornecedor: ' . $e->getMessage());
+        }
+    }
 }

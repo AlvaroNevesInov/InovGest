@@ -39,6 +39,51 @@ class Contact extends Model
     }
 
     /**
+     * Get the decrypted email.
+     */
+    protected function email(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: fn ($value) => $value ? $this->decryptValue($value) : null,
+            set: fn ($value) => $value ? \Illuminate\Support\Facades\Crypt::encryptString($value) : null,
+        );
+    }
+
+    /**
+     * Get the decrypted phone.
+     */
+    protected function phone(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: fn ($value) => $value ? $this->decryptValue($value) : null,
+            set: fn ($value) => $value ? \Illuminate\Support\Facades\Crypt::encryptString($value) : null,
+        );
+    }
+
+    /**
+     * Get the decrypted mobile.
+     */
+    protected function mobile(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: fn ($value) => $value ? $this->decryptValue($value) : null,
+            set: fn ($value) => $value ? \Illuminate\Support\Facades\Crypt::encryptString($value) : null,
+        );
+    }
+
+    /**
+     * Helper to decrypt a value safely.
+     */
+    private function decryptValue($value)
+    {
+        try {
+            return \Illuminate\Support\Facades\Crypt::decryptString($value);
+        } catch (\Exception $e) {
+            return $value;
+        }
+    }
+
+    /**
      * Get the entity that owns the contact.
      */
     public function entity(): BelongsTo

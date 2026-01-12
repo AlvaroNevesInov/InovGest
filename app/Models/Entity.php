@@ -35,21 +35,11 @@ class Entity extends Model
 
     /**
      * Get the list of attributes that should be encrypted.
+     * Note: NIF is not encrypted to maintain unique constraint validation
      */
     protected function getEncryptedAttributes(): array
     {
-        return ['nif', 'email', 'phone', 'mobile'];
-    }
-
-    /**
-     * Get the decrypted NIF.
-     */
-    protected function nif(): \Illuminate\Database\Eloquent\Casts\Attribute
-    {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
-            get: fn ($value) => $value ? $this->decryptValue($value) : null,
-            set: fn ($value) => $value ? \Illuminate\Support\Facades\Crypt::encryptString($value) : null,
-        );
+        return ['email', 'phone', 'mobile'];
     }
 
     /**

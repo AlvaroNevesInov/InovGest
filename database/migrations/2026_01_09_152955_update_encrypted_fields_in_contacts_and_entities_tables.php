@@ -20,20 +20,10 @@ return new class extends Migration
 
         // Update entities table to support encrypted values
         Schema::table('entities', function (Blueprint $table) {
-            // Drop unique index on nif before changing type
-            $table->dropUnique(['nif']);
-        });
-
-        Schema::table('entities', function (Blueprint $table) {
             $table->text('email')->nullable()->change();
             $table->text('phone')->nullable()->change();
             $table->text('mobile')->nullable()->change();
-            $table->string('nif', 500)->nullable()->change();
-        });
-
-        Schema::table('entities', function (Blueprint $table) {
-            // Recreate unique index on nif with limited length
-            $table->unique('nif');
+            // Keep nif as string to maintain unique constraint (it's public data)
         });
     }
 
@@ -49,18 +39,9 @@ return new class extends Migration
         });
 
         Schema::table('entities', function (Blueprint $table) {
-            $table->dropUnique(['nif']);
-        });
-
-        Schema::table('entities', function (Blueprint $table) {
             $table->string('email')->nullable()->change();
             $table->string('phone')->nullable()->change();
             $table->string('mobile')->nullable()->change();
-            $table->string('nif')->nullable()->change();
-        });
-
-        Schema::table('entities', function (Blueprint $table) {
-            $table->unique('nif');
         });
     }
 };

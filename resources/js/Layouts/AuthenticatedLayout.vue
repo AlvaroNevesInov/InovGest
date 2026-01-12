@@ -115,6 +115,26 @@ const showingNavigationDropdown = ref(false);
                                         <DropdownLink :href="route('activity-log.index')">Logs</DropdownLink>
                                     </template>
                                 </Dropdown>
+
+                                <!-- Dropdown for Configurações -->
+                                <Dropdown align="right" width="48">
+                                    <template #trigger>
+                                        <button class="inline-flex items-center px-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700 focus:outline-none focus:text-gray-700 dark:focus:text-gray-300 focus:border-gray-300 dark:focus:border-gray-700 transition duration-150 ease-in-out h-16">
+                                            Configurações
+                                            <svg class="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </template>
+                                    <template #content>
+                                        <DropdownLink :href="route('settings.companies.index')">Empresa</DropdownLink>
+                                        <DropdownLink :href="route('settings.countries.index')">Países</DropdownLink>
+                                        <DropdownLink :href="route('settings.contact-functions.index')">Funções Contacto</DropdownLink>
+                                        <DropdownLink :href="route('settings.calendar-types.index')">Tipos Calendário</DropdownLink>
+                                        <DropdownLink :href="route('settings.calendar-actions.index')">Ações Calendário</DropdownLink>
+                                        <DropdownLink :href="route('settings.vat-rates.index')">Taxas IVA</DropdownLink>
+                                    </template>
+                                </Dropdown>
                             </div>
                         </div>
 
@@ -329,6 +349,45 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('activity-log.*')"
                         >
                             Logs
+                        </ResponsiveNavLink>
+
+                        <!-- Configurações -->
+                        <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Configurações</div>
+                        <ResponsiveNavLink
+                            :href="route('settings.companies.index')"
+                            :active="route().current('settings.companies.*')"
+                        >
+                            Empresa
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('settings.countries.index')"
+                            :active="route().current('settings.countries.*')"
+                        >
+                            Países
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('settings.contact-functions.index')"
+                            :active="route().current('settings.contact-functions.*')"
+                        >
+                            Funções Contacto
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('settings.calendar-types.index')"
+                            :active="route().current('settings.calendar-types.*')"
+                        >
+                            Tipos Calendário
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('settings.calendar-actions.index')"
+                            :active="route().current('settings.calendar-actions.*')"
+                        >
+                            Ações Calendário
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('settings.vat-rates.index')"
+                            :active="route().current('settings.vat-rates.*')"
+                        >
+                            Taxas IVA
                         </ResponsiveNavLink>
                     </div>
 

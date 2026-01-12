@@ -17,6 +17,7 @@ class Company extends Model
         'mobile',
         'email',
         'website',
+        'logo_path',
         'notes',
     ];
 

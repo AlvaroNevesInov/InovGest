@@ -70,8 +70,11 @@ class ContactTest extends TestCase
         $this->assertDatabaseHas('contacts', [
             'name' => 'John',
             'surname' => 'Doe',
-            'email' => 'john.doe@example.com',
         ]);
+
+        // Verify encrypted email through model accessor
+        $contact = Contact::where('name', 'John')->where('surname', 'Doe')->first();
+        $this->assertEquals('john.doe@example.com', $contact->email);
     }
 
     /** @test */

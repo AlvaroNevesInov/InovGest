@@ -17,8 +17,8 @@ class ProposalService
      */
     public function convertToOrder(Proposal $proposal): Order
     {
-        if ($proposal->isClosed()) {
-            throw new \Exception('A proposta já está fechada.');
+        if (!$proposal->isClosed()) {
+            throw new \Exception('A proposta precisa estar fechada para ser convertida.');
         }
 
         if ($proposal->lines->isEmpty()) {

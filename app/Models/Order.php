@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Order extends Model
 {
-    use HasFactory, HasDocuments;
+    use HasFactory, HasDocuments, LogsActivity;
 
     protected $fillable = [
         'number',
@@ -137,5 +139,13 @@ class Order extends Model
     public function scopeClosed($query)
     {
         return $query->where('status', 'closed');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['number', 'status', 'total', 'entity_id'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
@@ -10,8 +10,9 @@ import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 
 const props = defineProps({
-    users: Array,
-    roles: Array
+    users: Object,
+    roles: Array,
+    filters: Object
 });
 
 const showDialog = ref(false);
@@ -97,7 +98,7 @@ const toggleRole = (roleName) => {
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
                     <div class="p-6">
-                        <div v-if="users.length > 0">
+                        <div v-if="users.data && users.data.length > 0">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -109,7 +110,7 @@ const toggleRole = (roleName) => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    <TableRow v-for="user in users" :key="user.id">
+                                    <TableRow v-for="user in users.data" :key="user.id">
                                         <TableCell class="font-medium">{{ user.name }}</TableCell>
                                         <TableCell>{{ user.email }}</TableCell>
                                         <TableCell>
@@ -145,6 +146,24 @@ const toggleRole = (roleName) => {
                                     </TableRow>
                                 </TableBody>
                             </Table>
+
+                            <!-- Paginação -->
+                            <div v-if="users.links && users.links.length > 3" class="mt-6 flex justify-center gap-2">
+                                <Link
+                                    v-for="(link, index) in users.links"
+                                    :key="index"
+                                    :href="link.url"
+                                    :class="[
+                                        'px-4 py-2 text-sm rounded-md',
+                                        link.active
+                                            ? 'bg-primary text-white'
+                                            : link.url
+                                            ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    ]"
+                                    v-html="link.label"
+                                />
+                            </div>
                         </div>
                         <div v-else class="py-12 text-center text-gray-500 dark:text-gray-400">
                             Nenhum utilizador encontrado.

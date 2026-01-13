@@ -1,65 +1,29 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import { Card, CardHeader, CardTitle, CardContent } from '@/Components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/Components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
-import { Label } from '@/Components/ui/label';
+import { Badge } from '@/Components/ui/badge';
 
 const props = defineProps({
-    bankAccounts: Array
+    bankAccounts: Object,
+    filters: Object
 });
 
-const showDialog = ref(false);
-const editingAccount = ref(null);
-const form = ref({
-    bank_name: '',
-    account_number: '',
-    iban: '',
-    swift: '',
-    initial_balance: 0
-});
+const searchTerm = ref(props.filters?.search || '');
+const activeFilter = ref(props.filters?.active || '');
 
-const openCreateDialog = () => {
-    editingAccount.value = null;
-    form.value = {
-        bank_name: '',
-        account_number: '',
-        iban: '',
-        swift: '',
-        initial_balance: 0
-    };
-    showDialog.value = true;
-};
-
-const openEditDialog = (account) => {
-    editingAccount.value = account;
-    form.value = {
-        bank_name: account.bank_name,
-        account_number: account.account_number,
-        iban: account.iban,
-        swift: account.swift || '',
-        initial_balance: account.initial_balance
-    };
-    showDialog.value = true;
-};
-
-const submitForm = () => {
-    if (editingAccount.value) {
-        router.put(route('bank-accounts.update', editingAccount.value.id), form.value, {
-            onSuccess: () => {
-                showDialog.value = false;
-            }
-        });
-    } else {
-        router.post(route('bank-accounts.store'), form.value, {
-            onSuccess: () => {
-                showDialog.value = false;
-            }
-        });
-    }
+const search = () => {
+    router.get(route('bank-accounts.index'), {
+        search: searchTerm.value,
+        active: activeFilter.value
+    }, {
+        preserveState: true,
+        replace: true
+    });
 };
 
 const deleteAccount = (id) => {
@@ -68,11 +32,11 @@ const deleteAccount = (id) => {
     }
 };
 
-const formatPrice = (price) => {
+const formatCurrency = (value, currency = 'EUR') => {
     return new Intl.NumberFormat('pt-PT', {
         style: 'currency',
-        currency: 'EUR'
-    }).format(price);
+        currency: currency
+    }).format(value);
 };
 </script>
 
@@ -85,125 +49,137 @@ const formatPrice = (price) => {
                 <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     Contas Bancárias
                 </h2>
-                <Button @click="openCreateDialog">Nova Conta Bancária</Button>
+                <Link :href="route('bank-accounts.create')">
+                    <Button>Nova Conta Bancária</Button>
+                </Link>
             </div>
         </template>
 
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
-                    <div class="p-6">
-                        <div v-if="bankAccounts.length > 0">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Banco</TableHead>
-                                        <TableHead>Número Conta</TableHead>
-                                        <TableHead>IBAN</TableHead>
-                                        <TableHead>SWIFT</TableHead>
-                                        <TableHead>Saldo Inicial</TableHead>
-                                        <TableHead>Saldo Atual</TableHead>
-                                        <TableHead class="text-right">Ações</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    <TableRow v-for="account in bankAccounts" :key="account.id">
-                                        <TableCell class="font-medium">{{ account.bank_name }}</TableCell>
-                                        <TableCell>{{ account.account_number }}</TableCell>
-                                        <TableCell>{{ account.iban }}</TableCell>
-                                        <TableCell>{{ account.swift || '-' }}</TableCell>
-                                        <TableCell>{{ formatPrice(account.initial_balance) }}</TableCell>
-                                        <TableCell>{{ formatPrice(account.current_balance) }}</TableCell>
-                                        <TableCell class="text-right">
-                                            <div class="flex justify-end gap-2">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    @click="openEditDialog(account)"
-                                                >
-                                                    Editar
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    @click="deleteAccount(account.id)"
-                                                >
-                                                    Eliminar
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Lista de Contas Bancárias</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <!-- Filtros -->
+                        <div class="mb-6 flex gap-4">
+                            <div class="flex-1">
+                                <Input
+                                    v-model="searchTerm"
+                                    type="text"
+                                    placeholder="Pesquisar por nome, banco ou IBAN..."
+                                    @keyup.enter="search"
+                                />
+                            </div>
+                            <select
+                                v-model="activeFilter"
+                                class="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                @change="search"
+                            >
+                                <option value="">Todas</option>
+                                <option value="1">Ativas</option>
+                                <option value="0">Inativas</option>
+                            </select>
+                            <Button @click="search">Pesquisar</Button>
                         </div>
+
+                        <!-- Tabela -->
+                        <div v-if="bankAccounts.data && bankAccounts.data.length > 0">
+                            <div class="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Nome</TableHead>
+                                            <TableHead>Banco</TableHead>
+                                            <TableHead>IBAN</TableHead>
+                                            <TableHead>Moeda</TableHead>
+                                            <TableHead>Saldo Atual</TableHead>
+                                            <TableHead>Estado</TableHead>
+                                            <TableHead class="text-right">Ações</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        <TableRow v-for="account in bankAccounts.data" :key="account.id">
+                                            <TableCell class="font-medium">
+                                                <Link
+                                                    :href="route('bank-accounts.show', account.id)"
+                                                    class="text-blue-600 hover:underline"
+                                                >
+                                                    {{ account.name }}
+                                                </Link>
+                                            </TableCell>
+                                            <TableCell>{{ account.bank_name }}</TableCell>
+                                            <TableCell class="font-mono text-sm">{{ account.iban }}</TableCell>
+                                            <TableCell>{{ account.currency }}</TableCell>
+                                            <TableCell
+                                                :class="{
+                                                    'text-green-600 font-semibold': account.current_balance >= 0,
+                                                    'text-red-600 font-semibold': account.current_balance < 0
+                                                }"
+                                            >
+                                                {{ formatCurrency(account.current_balance, account.currency) }}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge :variant="account.active ? 'default' : 'secondary'">
+                                                    {{ account.active ? 'Ativa' : 'Inativa' }}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell class="text-right">
+                                                <div class="flex justify-end gap-2">
+                                                    <Link :href="route('bank-accounts.show', account.id)">
+                                                        <Button variant="ghost" size="sm">
+                                                            Ver
+                                                        </Button>
+                                                    </Link>
+                                                    <Link :href="route('bank-accounts.edit', account.id)">
+                                                        <Button variant="ghost" size="sm">
+                                                            Editar
+                                                        </Button>
+                                                    </Link>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        @click="deleteAccount(account.id)"
+                                                    >
+                                                        Eliminar
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </div>
+
+                            <!-- Paginação -->
+                            <div v-if="bankAccounts.links && bankAccounts.links.length > 3" class="mt-6 flex justify-center gap-2">
+                                <Link
+                                    v-for="(link, index) in bankAccounts.links"
+                                    :key="index"
+                                    :href="link.url"
+                                    :class="[
+                                        'px-4 py-2 text-sm rounded-md',
+                                        link.active
+                                            ? 'bg-primary text-white'
+                                            : link.url
+                                            ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    ]"
+                                    v-html="link.label"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Estado Vazio -->
                         <div v-else class="py-12 text-center text-gray-500 dark:text-gray-400">
-                            Nenhuma conta bancária encontrada.
+                            <p class="mb-4">Nenhuma conta bancária encontrada.</p>
+                            <Link :href="route('bank-accounts.create')">
+                                <Button>Criar Primeira Conta</Button>
+                            </Link>
                         </div>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
-
-        <!-- Dialog for Create/Edit -->
-        <Dialog v-model:open="showDialog">
-            <DialogContent class="sm:max-w-[525px]">
-                <DialogHeader>
-                    <DialogTitle>
-                        {{ editingAccount ? 'Editar Conta Bancária' : 'Nova Conta Bancária' }}
-                    </DialogTitle>
-                </DialogHeader>
-                <form @submit.prevent="submitForm" class="space-y-4">
-                    <div>
-                        <Label for="bank_name">Nome do Banco</Label>
-                        <Input
-                            id="bank_name"
-                            v-model="form.bank_name"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <Label for="account_number">Número da Conta</Label>
-                        <Input
-                            id="account_number"
-                            v-model="form.account_number"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <Label for="iban">IBAN</Label>
-                        <Input
-                            id="iban"
-                            v-model="form.iban"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <Label for="swift">SWIFT (opcional)</Label>
-                        <Input
-                            id="swift"
-                            v-model="form.swift"
-                        />
-                    </div>
-                    <div>
-                        <Label for="initial_balance">Saldo Inicial</Label>
-                        <Input
-                            id="initial_balance"
-                            v-model="form.initial_balance"
-                            type="number"
-                            step="0.01"
-                            required
-                        />
-                    </div>
-                    <div class="flex justify-end gap-2">
-                        <Button type="button" variant="outline" @click="showDialog = false">
-                            Cancelar
-                        </Button>
-                        <Button type="submit">
-                            {{ editingAccount ? 'Atualizar' : 'Criar' }}
-                        </Button>
-                    </div>
-                </form>
-            </DialogContent>
-        </Dialog>
     </AuthenticatedLayout>
 </template>

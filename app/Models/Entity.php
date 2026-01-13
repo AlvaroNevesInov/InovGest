@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\HasEncryptedAttributes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Entity extends Model
 {
-    use HasFactory, HasEncryptedAttributes;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'type',
@@ -32,15 +33,6 @@ class Entity extends Model
         'rgpd_consent' => 'boolean',
         'active' => 'boolean',
     ];
-
-    /**
-     * Get the list of attributes that should be encrypted.
-     * Note: NIF is not encrypted to maintain unique constraint validation
-     */
-    protected function getEncryptedAttributes(): array
-    {
-        return ['email', 'phone', 'mobile'];
-    }
 
     /**
      * Get the decrypted email.
@@ -110,5 +102,13 @@ class Entity extends Model
     public function scopeActive($query)
     {
         return $query->where('active', true);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'nif', 'type', 'email', 'phone', 'active'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

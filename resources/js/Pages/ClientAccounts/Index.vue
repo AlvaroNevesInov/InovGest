@@ -11,9 +11,10 @@ import { Label } from '@/Components/ui/label';
 
 const props = defineProps({
     movements: Object,
-    entities: Array,
+    clients: Array,
     filters: Object
 });
+
 
 const showDialog = ref(false);
 const entityFilter = ref(props.filters?.entity_id || '');
@@ -108,8 +109,8 @@ const getTypeLabel = (type) => {
                                 class="h-10 w-full max-w-md rounded-md border border-input bg-background px-3 py-2 text-sm"
                             >
                                 <option value="">Todos os clientes</option>
-                                <option v-for="entity in entities" :key="entity.id" :value="entity.id">
-                                    {{ entity.name }}
+                                <option v-for="client in clients" :key="client.id" :value="client.id">
+                                    {{ client.name }}
                                 </option>
                             </select>
                         </div>
@@ -203,8 +204,8 @@ const getTypeLabel = (type) => {
                             class="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         >
                             <option value="">Selecione um cliente</option>
-                            <option v-for="entity in entities" :key="entity.id" :value="entity.id">
-                                {{ entity.name }}
+                            <option v-for="client in clients" :key="client.id" :value="client.id">
+                                {{ client.name }}
                             </option>
                         </select>
                     </div>

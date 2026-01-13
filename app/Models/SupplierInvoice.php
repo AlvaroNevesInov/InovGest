@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class SupplierInvoice extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'number',
@@ -54,5 +56,13 @@ class SupplierInvoice extends Model
     public function scopePaid($query)
     {
         return $query->where('status', 'paid');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['number', 'status', 'total_amount', 'supplier_id', 'payment_date'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

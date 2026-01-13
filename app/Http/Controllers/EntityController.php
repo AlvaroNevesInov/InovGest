@@ -67,7 +67,7 @@ class EntityController extends Controller
     {
         $validated = $request->validate([
             'type' => 'required|in:client,supplier,both',
-            'nif' => 'required|string|max:255|unique:entities,nif',
+            'nif' => ['required', 'string', 'regex:/^([A-Z]{2}[0-9A-Z]{8,12}|[0-9]{9})$/', 'unique:entities,nif'],
             'name' => 'required|string|max:255',
             'address' => 'nullable|string|max:255',
             'postal_code' => ['nullable', 'string', 'regex:/^\d{4}-\d{3}$/'],
@@ -80,6 +80,8 @@ class EntityController extends Controller
             'rgpd_consent' => 'boolean',
             'notes' => 'nullable|string',
             'active' => 'boolean',
+        ], [
+            'nif.regex' => 'O NIF deve ter 9 dígitos (ex: 123456789) ou formato europeu (ex: PT123456789).',
         ]);
 
         $validated['number'] = Entity::max('number') + 1;
@@ -121,7 +123,7 @@ class EntityController extends Controller
     {
         $validated = $request->validate([
             'type' => 'required|in:client,supplier,both',
-            'nif' => 'required|string|max:255|unique:entities,nif,' . $entity->id,
+            'nif' => ['required', 'string', 'regex:/^([A-Z]{2}[0-9A-Z]{8,12}|[0-9]{9})$/', 'unique:entities,nif,' . $entity->id],
             'name' => 'required|string|max:255',
             'address' => 'nullable|string|max:255',
             'postal_code' => ['nullable', 'string', 'regex:/^\d{4}-\d{3}$/'],
@@ -134,6 +136,8 @@ class EntityController extends Controller
             'rgpd_consent' => 'boolean',
             'notes' => 'nullable|string',
             'active' => 'boolean',
+        ], [
+            'nif.regex' => 'O NIF deve ter 9 dígitos (ex: 123456789) ou formato europeu (ex: PT123456789).',
         ]);
 
         $entity->update($validated);

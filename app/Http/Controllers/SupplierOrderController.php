@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\SupplierOrder;
 use App\Models\Entity;
 use App\Models\Article;
+use App\Models\Company;
+use App\Models\SupplierInvoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -65,7 +68,7 @@ class SupplierOrderController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $supplierOrder = DB::transaction(function () use ($validated) {
             $validated['number'] = 'SF' . str_pad((SupplierOrder::max('id') ?? 0) + 1, 6, '0', STR_PAD_LEFT);
             $validated['status'] = 'draft';
 
@@ -77,9 +80,44 @@ class SupplierOrderController extends Controller
             foreach ($lines as $line) {
                 $supplierOrder->lines()->create($line);
             }
+
+            // Calculate totals for the order
+            $supplierOrder->load('lines');
+            $supplierOrder->calculateTotals();
+
+            // Generate PDF for the supplier order
+            $supplierOrder->load(['supplier.country', 'lines.article']);
+            $company = Company::with('country')->first();
+
+            $pdf = Pdf::loadView('pdfs.supplier-order', [
+                'supplierOrder' => $supplierOrder,
+                'company' => $company,
+            ]);
+
+            // Save PDF to storage
+            $pdfContent = $pdf->output();
+            $pdfFileName = 'supplier-invoices/encomenda-' . $supplierOrder->number . '.pdf';
+            Storage::disk('documents')->put($pdfFileName, $pdfContent);
+
+            // Create supplier invoice
+            $dueDate = \Carbon\Carbon::parse($validated['order_date'])->addDays(30);
+
+            SupplierInvoice::create([
+                'number' => $supplierOrder->number,
+                'invoice_date' => $validated['order_date'],
+                'due_date' => $dueDate,
+                'supplier_id' => $supplierOrder->supplier_id,
+                'supplier_order_id' => $supplierOrder->id,
+                'total_amount' => $supplierOrder->total,
+                'document_path' => $pdfFileName,
+                'notes' => $validated['notes'] ?? null,
+                'status' => 'pending',
+            ]);
+
+            return $supplierOrder;
         });
 
-        return redirect()->route('supplier-orders.index')->with('success', 'Encomenda de fornecedor criada com sucesso!');
+        return redirect()->route('supplier-orders.index')->with('success', 'Encomenda e fatura de fornecedor criadas com sucesso!');
     }
 
     public function show(SupplierOrder $supplierOrder)
@@ -167,10 +205,12 @@ class SupplierOrderController extends Controller
 
     public function generatePdf(SupplierOrder $supplierOrder)
     {
-        $supplierOrder->load(['supplier', 'lines.article']);
+        $supplierOrder->load(['supplier.country', 'lines.article']);
+        $company = Company::with('country')->first();
 
         $pdf = Pdf::loadView('pdfs.supplier-order', [
             'supplierOrder' => $supplierOrder,
+            'company' => $company,
         ]);
 
         return $pdf->download('encomenda-fornecedor-' . $supplierOrder->number . '.pdf');

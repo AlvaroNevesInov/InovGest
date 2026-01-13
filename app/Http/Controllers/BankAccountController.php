@@ -33,6 +33,11 @@ class BankAccountController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        return Inertia::render('BankAccounts/Create');
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -50,7 +55,21 @@ class BankAccountController extends Controller
 
         BankAccount::create($validated);
 
-        return back()->with('success', 'Conta bancária criada com sucesso!');
+        return redirect()->route('bank-accounts.index')->with('success', 'Conta bancária criada com sucesso!');
+    }
+
+    public function show(BankAccount $bankAccount)
+    {
+        return Inertia::render('BankAccounts/Show', [
+            'bankAccount' => $bankAccount,
+        ]);
+    }
+
+    public function edit(BankAccount $bankAccount)
+    {
+        return Inertia::render('BankAccounts/Edit', [
+            'bankAccount' => $bankAccount,
+        ]);
     }
 
     public function update(Request $request, BankAccount $bankAccount)

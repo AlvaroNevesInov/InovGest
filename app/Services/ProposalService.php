@@ -17,16 +17,17 @@ class ProposalService
      */
     public function convertToOrder(Proposal $proposal): Order
     {
-        if (!$proposal->isClosed()) {
-            throw new \Exception('A proposta precisa estar fechada para ser convertida.');
-        }
-
         if ($proposal->lines->isEmpty()) {
             throw new \Exception('A proposta não tem linhas para converter.');
         }
 
         DB::beginTransaction();
         try {
+            // Close the proposal if not already closed
+            if (!$proposal->isClosed()) {
+                $proposal->close();
+            }
+
             // Create the order
             $order = Order::create([
                 'order_date' => now(),
@@ -54,11 +55,9 @@ class ProposalService
                 ]);
             }
 
-            // Recalculate order totals
+            // Load lines and recalculate order totals
+            $order->load('lines');
             $order->calculateTotals();
-
-            // Close the proposal
-            $proposal->close();
 
             DB::commit();
 
@@ -121,6 +120,8 @@ class ProposalService
                     ]);
                 }
 
+                // Load lines and recalculate totals
+                $supplierOrder->load('lines');
                 $supplierOrder->calculateTotals();
                 $supplierOrders[] = $supplierOrder;
             }

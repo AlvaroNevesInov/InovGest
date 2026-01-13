@@ -6,6 +6,8 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent } from '@/Components/ui/card';
 import InputError from '@/Components/InputError.vue';
+import { ref } from 'vue';
+import axios from 'axios';
 
 const props = defineProps({
     entity: Object,
@@ -28,6 +30,58 @@ const form = useForm({
     notes: props.entity.notes || '',
     active: props.entity.active
 });
+
+const validatingVies = ref(false);
+const viesMessage = ref('');
+const viesSuccess = ref(false);
+
+const validateVies = async () => {
+    if (!form.nif) {
+        viesMessage.value = 'Por favor, insira um NIF';
+        viesSuccess.value = false;
+        return;
+    }
+
+    validatingVies.value = true;
+    viesMessage.value = '';
+    viesSuccess.value = false;
+
+    try {
+        const response = await axios.post(route('entities.validateVies'), {
+            nif: form.nif
+        });
+
+        if (response.data.valid) {
+            viesSuccess.value = true;
+            viesMessage.value = 'NIF válido! Dados preenchidos automaticamente.';
+
+            // Preencher automaticamente os campos com os dados do VIES
+            if (response.data.name) {
+                form.name = response.data.name;
+            }
+            if (response.data.address) {
+                form.address = response.data.address;
+            }
+
+            // Selecionar o país correto se disponível
+            if (response.data.country_code && props.countries) {
+                const country = props.countries.find(c => c.code === response.data.country_code);
+                if (country) {
+                    form.country_id = country.id;
+                }
+            }
+        } else {
+            viesSuccess.value = false;
+            viesMessage.value = response.data.error || 'NIF inválido ou não encontrado no sistema VIES.';
+        }
+    } catch (error) {
+        viesSuccess.value = false;
+        viesMessage.value = 'Erro ao validar NIF. Serviço temporariamente indisponível.';
+        console.error('VIES validation error:', error);
+    } finally {
+        validatingVies.value = false;
+    }
+};
 
 const submit = () => {
     form.put(route('entities.update', props.entity.id));
@@ -73,31 +127,51 @@ const submit = () => {
                                 <InputError :message="form.errors.type" class="mt-2" />
                             </div>
 
-                            <!-- NIF e Nome -->
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div>
-                                    <Label for="nif">NIF *</Label>
+                            <!-- NIF com botão de validação VIES -->
+                            <div>
+                                <Label for="nif">NIF *</Label>
+                                <div class="mt-1 flex gap-2">
                                     <Input
                                         id="nif"
                                         v-model="form.nif"
                                         type="text"
-                                        class="mt-1"
+                                        class="flex-1"
                                         required
+                                        placeholder="123456789 ou PT123456789"
                                     />
-                                    <InputError :message="form.errors.nif" class="mt-2" />
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        @click="validateVies"
+                                        :disabled="validatingVies || !form.nif"
+                                    >
+                                        {{ validatingVies ? 'A validar...' : 'Validar VIES' }}
+                                    </Button>
                                 </div>
+                                <InputError :message="form.errors.nif" class="mt-2" />
+                                <p
+                                    v-if="viesMessage"
+                                    class="mt-2 text-sm"
+                                    :class="viesSuccess ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+                                >
+                                    {{ viesMessage }}
+                                </p>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    Use o botão VIES para validar e preencher automaticamente os dados
+                                </p>
+                            </div>
 
-                                <div>
-                                    <Label for="name">Nome *</Label>
-                                    <Input
-                                        id="name"
-                                        v-model="form.name"
-                                        type="text"
-                                        class="mt-1"
-                                        required
-                                    />
-                                    <InputError :message="form.errors.name" class="mt-2" />
-                                </div>
+                            <!-- Nome -->
+                            <div>
+                                <Label for="name">Nome *</Label>
+                                <Input
+                                    id="name"
+                                    v-model="form.name"
+                                    type="text"
+                                    class="mt-1"
+                                    required
+                                />
+                                <InputError :message="form.errors.name" class="mt-2" />
                             </div>
 
                             <!-- Morada -->

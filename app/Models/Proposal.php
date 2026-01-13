@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Carbon\Carbon;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Proposal extends Model
 {
-    use HasFactory, HasDocuments;
+    use HasFactory, HasDocuments, LogsActivity;
 
     protected $fillable = [
         'number',
@@ -151,5 +153,13 @@ class Proposal extends Model
     public function scopeExpired($query)
     {
         return $query->where('validity_date', '<', now());
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['number', 'status', 'total', 'entity_id'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

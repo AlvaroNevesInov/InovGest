@@ -2,63 +2,61 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ContactFunction;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ContactFunctionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $query = ContactFunction::query();
+
+        if ($request->has('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->has('active') && $request->active !== 'all') {
+            $query->where('active', $request->active === '1');
+        }
+
+        $contactFunctions = $query->latest()->paginate(15)->withQueryString();
+
+        return Inertia::render('ContactFunctions/Index', [
+            'contactFunctions' => $contactFunctions,
+            'filters' => $request->only(['search', 'active']),
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:contact_functions,name',
+            'active' => 'boolean',
+        ]);
+
+        ContactFunction::create($validated);
+
+        return back()->with('success', 'Função de contacto criada com sucesso!');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, ContactFunction $contactFunction)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:contact_functions,name,' . $contactFunction->id,
+            'active' => 'boolean',
+        ]);
+
+        $contactFunction->update($validated);
+
+        return back()->with('success', 'Função de contacto atualizada com sucesso!');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function destroy(ContactFunction $contactFunction)
     {
-        //
-    }
+        $contactFunction->delete();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('contact-functions.index')
+            ->with('success', 'Função de contacto eliminada com sucesso!');
     }
 }

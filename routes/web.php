@@ -68,7 +68,7 @@ Route::middleware('auth')->group(function () {
     // Supplier Invoices (Faturas Fornecedores)
     Route::resource('supplier-invoices', App\Http\Controllers\SupplierInvoiceController::class);
     Route::post('supplier-invoices/{supplierInvoice}/mark-as-paid', [App\Http\Controllers\SupplierInvoiceController::class, 'markAsPaid'])
-        ->name('supplier-invoices.markAsPaid');
+        ->name('supplier-invoices.mark-as-paid');
     Route::get('supplier-invoices/{supplierInvoice}/download', [App\Http\Controllers\SupplierInvoiceController::class, 'download'])
         ->name('supplier-invoices.download');
 

@@ -123,12 +123,16 @@ class SupplierInvoiceController extends Controller
         // Send email if requested
         if ($request->send_email && $supplierInvoice->supplier->email) {
             try {
+                // Load supplier relationship for email
+                $supplierInvoice->load('supplier');
+
                 Mail::to($supplierInvoice->supplier->email)->send(
                     new PaymentProofMail($supplierInvoice)
                 );
                 return back()->with('success', 'Fatura marcada como paga e email enviado com sucesso!');
             } catch (\Exception $e) {
-                return back()->with('warning', 'Fatura marcada como paga mas o email não pôde ser enviado.');
+                \Log::error('Failed to send payment proof email: ' . $e->getMessage());
+                return back()->with('warning', 'Fatura marcada como paga mas o email não pôde ser enviado: ' . $e->getMessage());
             }
         }
 

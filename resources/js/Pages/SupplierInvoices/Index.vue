@@ -46,6 +46,16 @@ const openPaymentDialog = (invoice) => {
 };
 
 const submitPayment = () => {
+    console.log('submitPayment called');
+    console.log('selectedInvoice:', selectedInvoice.value);
+    console.log('paymentForm:', paymentForm.value);
+
+    if (!selectedInvoice.value || !selectedInvoice.value.id) {
+        console.error('No invoice selected');
+        alert('Erro: Nenhuma fatura selecionada');
+        return;
+    }
+
     const formData = new FormData();
     formData.append('payment_date', paymentForm.value.payment_date);
     formData.append('send_email', paymentForm.value.send_email ? '1' : '0');
@@ -53,9 +63,15 @@ const submitPayment = () => {
         formData.append('payment_proof', paymentForm.value.payment_proof);
     }
 
+    console.log('Posting to route:', route('supplier-invoices.mark-as-paid', selectedInvoice.value.id));
+
     router.post(route('supplier-invoices.mark-as-paid', selectedInvoice.value.id), formData, {
         onSuccess: () => {
+            console.log('Payment successful');
             showPaymentDialog.value = false;
+        },
+        onError: (errors) => {
+            console.error('Payment failed:', errors);
         }
     });
 };
@@ -191,11 +207,11 @@ const handlePaymentFileChange = (event) => {
                             </Table>
 
                             <!-- Paginação -->
-                            <div class="mt-4 flex items-center justify-between">
+                            <div v-if="invoices.from && invoices.to" class="mt-4 flex items-center justify-between">
                                 <div class="text-sm text-gray-700 dark:text-gray-300">
                                     A mostrar {{ invoices.from }} a {{ invoices.to }} de {{ invoices.total }} resultados
                                 </div>
-                                <div class="flex gap-2">
+                                <div v-if="invoices.links && invoices.links.length > 3" class="flex gap-2">
                                     <Link
                                         v-for="link in invoices.links"
                                         :key="link.label"

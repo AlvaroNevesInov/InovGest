@@ -5,9 +5,6 @@ namespace App\Mail;
 use App\Models\SupplierInvoice;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
 
@@ -15,48 +12,36 @@ class PaymentProofMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $invoice;
+
     /**
      * Create a new message instance.
      */
-    public function __construct(
-        public SupplierInvoice $invoice
-    ) {}
-
-    /**
-     * Get the message envelope.
-     */
-    public function envelope(): Envelope
+    public function __construct(SupplierInvoice $invoice)
     {
-        return new Envelope(
-            subject: 'Comprovativo de Pagamento - Fatura ' . $this->invoice->number,
-        );
+        $this->invoice = $invoice;
     }
 
     /**
-     * Get the message content definition.
+     * Build the message.
      */
-    public function content(): Content
+    public function build()
     {
-        return new Content(
-            view: 'emails.payment-proof',
-        );
-    }
+        $email = $this->subject('Comprovativo de Pagamento - Fatura ' . $this->invoice->number)
+                      ->view('emails.payment-proof')
+                      ->with([
+                          'invoice' => $this->invoice,
+                      ]);
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
-    public function attachments(): array
-    {
-        $attachments = [];
-
+        // Attach payment proof if exists
         if ($this->invoice->payment_proof_path && Storage::disk('documents')->exists($this->invoice->payment_proof_path)) {
-            $attachments[] = Attachment::fromStorage('documents/' . $this->invoice->payment_proof_path)
-                ->as('Comprovativo_Pagamento.pdf')
-                ->withMime('application/pdf');
+            $path = Storage::disk('documents')->path($this->invoice->payment_proof_path);
+            $email->attach($path, [
+                'as' => 'Comprovativo_Pagamento.pdf',
+                'mime' => 'application/pdf',
+            ]);
         }
 
-        return $attachments;
+        return $email;
     }
 }

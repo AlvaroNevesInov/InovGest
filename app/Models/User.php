@@ -50,4 +50,56 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+
+    /**
+     * Get the companies that the user has access to.
+     */
+    public function companies()
+    {
+        return $this->belongsToMany(Company::class)
+            ->withPivot('is_owner')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the user's current active company.
+     */
+    public function currentCompany()
+    {
+        return $this->belongsTo(Company::class, 'current_company_id');
+    }
+
+    /**
+     * Check if the user is the owner of a specific company.
+     */
+    public function isOwnerOf($companyId): bool
+    {
+        return $this->companies()
+            ->wherePivot('company_id', $companyId)
+            ->wherePivot('is_owner', true)
+            ->exists();
+    }
+
+    /**
+     * Check if the user has access to a specific company.
+     */
+    public function hasAccessTo($companyId): bool
+    {
+        return $this->companies()
+            ->where('companies.id', $companyId)
+            ->exists();
+    }
+
+    /**
+     * Switch the user's current active company.
+     */
+    public function switchCompany($companyId): bool
+    {
+        if ($this->hasAccessTo($companyId)) {
+            $this->current_company_id = $companyId;
+            return $this->save();
+        }
+
+        return false;
+    }
 }

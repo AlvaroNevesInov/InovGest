@@ -38,9 +38,13 @@ class OrderSeeder extends Seeder
 
         $this->command->info('Creating sample orders...');
 
+        // Get the default company
+        $company = \App\Models\Company::first();
+
         // Create 5 draft orders
         for ($i = 0; $i < 5; $i++) {
             $order = Order::factory()->draft()->create([
+                'company_id' => $company->id,
                 'entity_id' => $clients->random()->id,
             ]);
 
@@ -69,6 +73,7 @@ class OrderSeeder extends Seeder
         // Create 3 closed orders
         for ($i = 0; $i < 3; $i++) {
             $order = Order::factory()->closed()->create([
+                'company_id' => $company->id,
                 'entity_id' => $clients->random()->id,
             ]);
 

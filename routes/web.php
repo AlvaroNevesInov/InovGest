@@ -96,6 +96,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('documents/{document}', [App\Http\Controllers\DocumentController::class, 'destroy'])
         ->name('documents.destroy');
 
+    // Company Switching
+    Route::post('companies/{company}/switch', App\Http\Controllers\CompanySwitchController::class)
+        ->name('companies.switch');
+
     // Settings
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::resource('countries', App\Http\Controllers\CountryController::class)

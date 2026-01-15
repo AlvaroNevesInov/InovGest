@@ -10,16 +10,24 @@ use Illuminate\Support\Facades\Storage;
 
 class CompanyController extends Controller
 {
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $company = Company::with('country')->first();
+        $user = $request->user();
+
+        if (!$user) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        // Get all companies the user has access to
+        $companies = $user->companies()->with('country')->get();
         $countries = Country::active()->orderBy('name')->get();
 
         return Inertia::render('Settings/Companies/Index', [
-            'company' => $company,
+            'companies' => $companies,
             'countries' => $countries,
         ]);
     }
@@ -48,7 +56,17 @@ class CompanyController extends Controller
             $validated['logo_path'] = $request->file('logo')->store('logos', 'public');
         }
 
-        Company::create($validated);
+        // Create the company
+        $company = Company::create($validated);
+
+        // Attach the current user as owner of the new company
+        $request->user()->companies()->attach($company->id, ['is_owner' => true]);
+
+        // Set as current company if user doesn't have one
+        if (!$request->user()->current_company_id) {
+            $request->user()->current_company_id = $company->id;
+            $request->user()->save();
+        }
 
         return back()->with('success', 'Dados da empresa criados com sucesso!');
     }
@@ -58,6 +76,11 @@ class CompanyController extends Controller
      */
     public function update(Request $request, Company $company)
     {
+        // Only owners can update companies
+        if (!$request->user()->isOwnerOf($company->id)) {
+            abort(403, 'Apenas proprietários podem editar esta empresa.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'nif' => 'required|string|max:20',
@@ -89,8 +112,18 @@ class CompanyController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Company $company)
+    public function destroy(Request $request, Company $company)
     {
+        // Only owners can delete companies
+        if (!$request->user()->isOwnerOf($company->id)) {
+            abort(403, 'Apenas proprietários podem remover esta empresa.');
+        }
+
+        // Prevent deleting if it's the user's current company
+        if ($request->user()->current_company_id === $company->id) {
+            return back()->withErrors(['error' => 'Não pode remover a empresa atualmente ativa. Mude para outra empresa primeiro.']);
+        }
+
         if ($company->logo_path) {
             Storage::disk('public')->delete($company->logo_path);
         }

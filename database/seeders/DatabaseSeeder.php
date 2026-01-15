@@ -31,6 +31,11 @@ class DatabaseSeeder extends Seeder
         // Assign admin role to test user
         $user->assignRole('Administrador');
 
+        // Setup default company and tenant relationships
+        $this->call([
+            DefaultTenantSeeder::class,
+        ]);
+
         // Seed configuration tables
         $this->call([
             CountrySeeder::class,
@@ -45,11 +50,15 @@ class DatabaseSeeder extends Seeder
         // Get Portugal country for realistic data
         $portugalId = \App\Models\Country::where('code', 'PT')->first()?->id;
 
+        // Get the default company
+        $company = \App\Models\Company::first();
+
         // Create 10 clients
         \App\Models\Entity::factory()
             ->count(10)
             ->client()
             ->create([
+                'company_id' => $company->id,
                 'country_id' => $portugalId,
             ]);
 
@@ -58,6 +67,7 @@ class DatabaseSeeder extends Seeder
             ->count(5)
             ->supplier()
             ->create([
+                'company_id' => $company->id,
                 'country_id' => $portugalId,
             ]);
 
@@ -65,6 +75,7 @@ class DatabaseSeeder extends Seeder
         \App\Models\Entity::factory()
             ->count(3)
             ->create([
+                'company_id' => $company->id,
                 'type' => 'both',
                 'country_id' => $portugalId,
             ]);
@@ -73,6 +84,7 @@ class DatabaseSeeder extends Seeder
         \App\Models\Entity::factory()
             ->inactive()
             ->create([
+                'company_id' => $company->id,
                 'country_id' => $portugalId,
             ]);
 
@@ -88,6 +100,7 @@ class DatabaseSeeder extends Seeder
 
             for ($i = 0; $i < $contactCount; $i++) {
                 \App\Models\Contact::factory()->create([
+                    'company_id' => $company->id,
                     'entity_id' => $entity->id,
                     'contact_function_id' => $contactFunctions->random()->id,
                 ]);

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Models\Concerns\HasDocuments;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,9 +14,10 @@ use Spatie\Activitylog\LogOptions;
 
 class Proposal extends Model
 {
-    use HasFactory, HasDocuments, LogsActivity;
+    use HasFactory, HasDocuments, LogsActivity, BelongsToCompany;
 
     protected $fillable = [
+        'company_id',
         'number',
         'proposal_date',
         'entity_id',

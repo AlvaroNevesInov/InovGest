@@ -28,8 +28,12 @@ class ArticleSeeder extends Seeder
             return;
         }
 
+        // Get the default company
+        $company = \App\Models\Company::first();
+
         $articles = [
             [
+                'company_id' => $company->id,
                 'reference' => 'ART-00001',
                 'name' => 'Computador Portátil Dell Latitude',
                 'description' => 'Portátil profissional com processador Intel i7, 16GB RAM, SSD 512GB',
@@ -39,6 +43,7 @@ class ArticleSeeder extends Seeder
                 'active' => true,
             ],
             [
+                'company_id' => $company->id,
                 'reference' => 'ART-00002',
                 'name' => 'Monitor LG 27" 4K',
                 'description' => 'Monitor profissional 27 polegadas com resolução 4K UHD',
@@ -47,6 +52,7 @@ class ArticleSeeder extends Seeder
                 'active' => true,
             ],
             [
+                'company_id' => $company->id,
                 'reference' => 'ART-00003',
                 'name' => 'Teclado Mecânico Logitech',
                 'description' => 'Teclado mecânico com switches Cherry MX, iluminação RGB',
@@ -55,6 +61,7 @@ class ArticleSeeder extends Seeder
                 'active' => true,
             ],
             [
+                'company_id' => $company->id,
                 'reference' => 'ART-00004',
                 'name' => 'Cadeira de Escritório Ergonómica',
                 'description' => 'Cadeira ergonómica com apoio lombar ajustável',
@@ -63,6 +70,7 @@ class ArticleSeeder extends Seeder
                 'active' => true,
             ],
             [
+                'company_id' => $company->id,
                 'reference' => 'ART-00005',
                 'name' => 'Impressora HP LaserJet',
                 'description' => 'Impressora laser monocromática com scanner integrado',
@@ -78,6 +86,7 @@ class ArticleSeeder extends Seeder
 
         // Create 15 additional random articles using factory
         Article::factory()->count(15)->create([
+            'company_id' => $company->id,
             'vat_rate_id' => $vatRates->random()->id,
         ]);
 

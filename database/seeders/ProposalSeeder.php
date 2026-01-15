@@ -38,9 +38,13 @@ class ProposalSeeder extends Seeder
 
         $this->command->info('Creating sample proposals...');
 
+        // Get the default company
+        $company = \App\Models\Company::first();
+
         // Create 5 draft proposals
         for ($i = 0; $i < 5; $i++) {
             $proposal = Proposal::factory()->draft()->create([
+                'company_id' => $company->id,
                 'entity_id' => $clients->random()->id,
             ]);
 
@@ -69,6 +73,7 @@ class ProposalSeeder extends Seeder
         // Create 3 closed proposals
         for ($i = 0; $i < 3; $i++) {
             $proposal = Proposal::factory()->closed()->create([
+                'company_id' => $company->id,
                 'entity_id' => $clients->random()->id,
             ]);
 
@@ -97,6 +102,7 @@ class ProposalSeeder extends Seeder
         // Create 2 expired proposals
         for ($i = 0; $i < 2; $i++) {
             $proposal = Proposal::factory()->expired()->draft()->create([
+                'company_id' => $company->id,
                 'entity_id' => $clients->random()->id,
             ]);
 

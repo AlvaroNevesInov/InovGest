@@ -25,4 +25,22 @@ class Company extends Model
     {
         return $this->belongsTo(Country::class);
     }
+
+    /**
+     * Get the users that have access to this company.
+     */
+    public function users()
+    {
+        return $this->belongsToMany(User::class)
+            ->withPivot('is_owner')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the users that own this company.
+     */
+    public function owners()
+    {
+        return $this->users()->wherePivot('is_owner', true);
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\TenantOnboardingService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,12 +29,13 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, TenantOnboardingService $onboardingService): RedirectResponse
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'company_name' => 'nullable|string|max:255',
         ]);
 
         $user = User::create([
@@ -46,6 +48,13 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // Create a default tenant for the user
+        $tenantName = $request->company_name ?? "{$user->name}'s Organization";
+        $tenant = $onboardingService->createTenant($user, [
+            'name' => $tenantName,
+        ]);
+
+        // Redirect to onboarding wizard
+        return redirect(route('onboarding.start', absolute: false));
     }
 }

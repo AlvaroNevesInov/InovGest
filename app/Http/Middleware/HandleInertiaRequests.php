@@ -50,6 +50,12 @@ class HandleInertiaRequests extends Middleware
                 'companies' => $user
                     ? $user->companies()->with('country')->get()
                     : [],
+                'current_tenant' => $user && $user->current_tenant_id
+                    ? $user->currentTenant
+                    : null,
+                'tenants' => $user
+                    ? $user->tenants
+                    : [],
             ],
             'ziggy' => fn () => [
                 ...(new Ziggy)->toArray(),

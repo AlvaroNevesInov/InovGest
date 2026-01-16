@@ -19,6 +19,25 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    // Tenant Onboarding
+    Route::prefix('onboarding')->name('onboarding.')->group(function () {
+        Route::get('/', [App\Http\Controllers\TenantOnboardingController::class, 'start'])->name('start');
+        Route::get('/step1', [App\Http\Controllers\TenantOnboardingController::class, 'step1'])->name('step1');
+        Route::post('/step1', [App\Http\Controllers\TenantOnboardingController::class, 'saveStep1'])->name('step1.save');
+        Route::get('/step2', [App\Http\Controllers\TenantOnboardingController::class, 'step2'])->name('step2');
+        Route::post('/step2', [App\Http\Controllers\TenantOnboardingController::class, 'saveStep2'])->name('step2.save');
+        Route::get('/step3', [App\Http\Controllers\TenantOnboardingController::class, 'step3'])->name('step3');
+        Route::post('/step3', [App\Http\Controllers\TenantOnboardingController::class, 'saveStep3'])->name('step3.save');
+        Route::get('/complete', [App\Http\Controllers\TenantOnboardingController::class, 'complete'])->name('complete');
+        Route::get('/checklist', [App\Http\Controllers\TenantOnboardingController::class, 'checklist'])->name('checklist');
+        Route::post('/tasks/{task}/toggle', [App\Http\Controllers\TenantOnboardingController::class, 'toggleTask'])->name('task.toggle');
+        Route::post('/skip', [App\Http\Controllers\TenantOnboardingController::class, 'skip'])->name('skip');
+    });
+
+    // Tenants
+    Route::resource('tenants', App\Http\Controllers\TenantController::class);
+    Route::post('tenants/{tenant}/switch', [App\Http\Controllers\TenantController::class, 'switch'])->name('tenants.switch');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

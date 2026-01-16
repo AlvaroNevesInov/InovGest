@@ -12,6 +12,7 @@ import { Input } from '@/Components/ui/input';
 const props = defineProps({
     users: Object,
     roles: Array,
+    companies: Array,
     filters: Object
 });
 
@@ -22,7 +23,9 @@ const form = ref({
     email: '',
     password: '',
     password_confirmation: '',
-    roles: []
+    roles: [],
+    companies: [],
+    company_owners: []
 });
 
 const openCreateDialog = () => {
@@ -32,7 +35,9 @@ const openCreateDialog = () => {
         email: '',
         password: '',
         password_confirmation: '',
-        roles: []
+        roles: [],
+        companies: [],
+        company_owners: []
     };
     showDialog.value = true;
 };
@@ -44,7 +49,9 @@ const openEditDialog = (user) => {
         email: user.email,
         password: '',
         password_confirmation: '',
-        roles: user.roles?.map(r => r.name) || []
+        roles: user.roles?.map(r => r.name) || [],
+        companies: user.companies?.map(c => c.id) || [],
+        company_owners: user.companies?.filter(c => c.pivot.is_owner).map(c => c.id) || []
     };
     showDialog.value = true;
 };
@@ -79,6 +86,29 @@ const toggleRole = (roleName) => {
         form.value.roles.push(roleName);
     }
 };
+
+const toggleCompany = (companyId) => {
+    const index = form.value.companies.indexOf(companyId);
+    if (index > -1) {
+        form.value.companies.splice(index, 1);
+        // Remove from owners if unchecked
+        const ownerIndex = form.value.company_owners.indexOf(companyId);
+        if (ownerIndex > -1) {
+            form.value.company_owners.splice(ownerIndex, 1);
+        }
+    } else {
+        form.value.companies.push(companyId);
+    }
+};
+
+const toggleCompanyOwner = (companyId) => {
+    const index = form.value.company_owners.indexOf(companyId);
+    if (index > -1) {
+        form.value.company_owners.splice(index, 1);
+    } else {
+        form.value.company_owners.push(companyId);
+    }
+};
 </script>
 
 <template>
@@ -105,6 +135,7 @@ const toggleRole = (roleName) => {
                                         <TableHead>Nome</TableHead>
                                         <TableHead>Email</TableHead>
                                         <TableHead>Roles</TableHead>
+                                        <TableHead>Empresas</TableHead>
                                         <TableHead>2FA</TableHead>
                                         <TableHead class="text-right">Ações</TableHead>
                                     </TableRow>
@@ -118,6 +149,15 @@ const toggleRole = (roleName) => {
                                                 <Badge v-for="role in user.roles" :key="role.id" variant="secondary">
                                                     {{ role.name }}
                                                 </Badge>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div class="flex flex-wrap gap-1">
+                                                <Badge v-for="company in user.companies" :key="company.id" :variant="company.pivot.is_owner ? 'default' : 'outline'">
+                                                    {{ company.name }}
+                                                    <span v-if="company.pivot.is_owner" class="ml-1">★</span>
+                                                </Badge>
+                                                <span v-if="!user.companies || user.companies.length === 0" class="text-sm text-gray-500">-</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -231,6 +271,39 @@ const toggleRole = (roleName) => {
                                 <Label :for="'role-' + role.id">{{ role.name }}</Label>
                             </div>
                         </div>
+                    </div>
+                    <div>
+                        <Label>Acesso a Empresas (Tenants)</Label>
+                        <div class="space-y-2 mt-2 max-h-48 overflow-y-auto border rounded-md p-3">
+                            <div v-if="companies && companies.length > 0">
+                                <div v-for="company in companies" :key="company.id" class="flex items-center justify-between space-x-2 py-1">
+                                    <div class="flex items-center space-x-2">
+                                        <input
+                                            :id="'company-' + company.id"
+                                            type="checkbox"
+                                            :checked="form.companies.includes(company.id)"
+                                            @change="toggleCompany(company.id)"
+                                            class="h-4 w-4 rounded border-gray-300"
+                                        />
+                                        <Label :for="'company-' + company.id" class="font-normal">{{ company.name }}</Label>
+                                    </div>
+                                    <div v-if="form.companies.includes(company.id)" class="flex items-center space-x-2">
+                                        <input
+                                            :id="'owner-' + company.id"
+                                            type="checkbox"
+                                            :checked="form.company_owners.includes(company.id)"
+                                            @change="toggleCompanyOwner(company.id)"
+                                            class="h-4 w-4 rounded border-gray-300"
+                                        />
+                                        <Label :for="'owner-' + company.id" class="text-xs text-gray-600">Owner</Label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else class="text-sm text-gray-500 text-center py-2">
+                                Não tem empresas disponíveis
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">★ Owner tem permissões completas para editar/remover a empresa</p>
                     </div>
                     <div class="flex justify-end gap-2">
                         <Button type="button" variant="outline" @click="showDialog = false">

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\OnboardingChecklist;
+use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -10,6 +11,13 @@ use Illuminate\Support\Str;
 
 class TenantOnboardingService
 {
+    protected $subscriptionService;
+
+    public function __construct(SubscriptionService $subscriptionService)
+    {
+        $this->subscriptionService = $subscriptionService;
+    }
+
     /**
      * Create a new tenant with automatic setup.
      */
@@ -33,6 +41,12 @@ class TenantOnboardingService
 
             // Create default onboarding checklist
             OnboardingChecklist::createDefaultTasksForTenant($tenant->id);
+
+            // Create free trial subscription
+            $freePlan = Plan::where('slug', 'free')->first();
+            if ($freePlan) {
+                $this->subscriptionService->createSubscription($tenant, $freePlan);
+            }
 
             return $tenant;
         });

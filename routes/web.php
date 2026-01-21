@@ -38,6 +38,22 @@ Route::middleware('auth')->group(function () {
     Route::resource('tenants', App\Http\Controllers\TenantController::class);
     Route::post('tenants/{tenant}/switch', [App\Http\Controllers\TenantController::class, 'switch'])->name('tenants.switch');
 
+    // Plans & Subscriptions
+    Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+        // Plans (available to all authenticated users)
+        Route::get('/plans', [App\Http\Controllers\PlanController::class, 'index'])->name('plans');
+        Route::get('/plans/{plan}', [App\Http\Controllers\PlanController::class, 'show'])->name('plans.show');
+
+        // Subscription management
+        Route::get('/', [App\Http\Controllers\SubscriptionController::class, 'index'])->name('index');
+        Route::post('/subscribe/{plan}', [App\Http\Controllers\SubscriptionController::class, 'subscribe'])->name('subscribe');
+        Route::post('/upgrade/{plan}', [App\Http\Controllers\SubscriptionController::class, 'upgrade'])->name('upgrade');
+        Route::post('/downgrade/{plan}', [App\Http\Controllers\SubscriptionController::class, 'downgrade'])->name('downgrade');
+        Route::post('/cancel-scheduled', [App\Http\Controllers\SubscriptionController::class, 'cancelScheduledChange'])->name('cancel-scheduled');
+        Route::post('/cancel', [App\Http\Controllers\SubscriptionController::class, 'cancel'])->name('cancel');
+        Route::post('/resume', [App\Http\Controllers\SubscriptionController::class, 'resume'])->name('resume');
+    });
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

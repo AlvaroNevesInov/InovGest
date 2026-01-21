@@ -56,6 +56,18 @@ class Tenant extends Model
         return $this->hasMany(OnboardingChecklist::class);
     }
 
+    public function subscription(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function activeSubscription()
+    {
+        return $this->hasOne(Subscription::class)
+            ->whereIn('status', ['active', 'trialing'])
+            ->latest();
+    }
+
     /**
      * Get the onboarding completion percentage.
      */
@@ -70,5 +82,48 @@ class Tenant extends Model
     public function isOnboardingComplete(): bool
     {
         return OnboardingChecklist::allRequiredTasksCompleted($this->id);
+    }
+
+    /**
+     * Check if tenant has an active subscription
+     */
+    public function hasActiveSubscription(): bool
+    {
+        return $this->activeSubscription()->exists();
+    }
+
+    /**
+     * Check if tenant is on trial
+     */
+    public function onTrial(): bool
+    {
+        $subscription = $this->activeSubscription;
+        return $subscription && $subscription->onTrial();
+    }
+
+    /**
+     * Check if tenant can access a feature
+     */
+    public function canAccessFeature(string $feature): bool
+    {
+        $subscription = $this->activeSubscription;
+        if (!$subscription) {
+            return false;
+        }
+
+        return $subscription->plan->hasFeature($feature);
+    }
+
+    /**
+     * Check if tenant has reached limit for a feature
+     */
+    public function hasReachedLimit(string $feature): bool
+    {
+        $subscription = $this->activeSubscription;
+        if (!$subscription) {
+            return true;
+        }
+
+        return $subscription->hasReachedLimit($feature);
     }
 }

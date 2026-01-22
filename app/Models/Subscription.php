@@ -63,6 +63,21 @@ class Subscription extends Model
         return $this->hasMany(SubscriptionUsage::class);
     }
 
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(SubscriptionAuditLog::class);
+    }
+
+    public function usageHistory(): HasMany
+    {
+        return $this->hasMany(SubscriptionUsageHistory::class);
+    }
+
+    public function credits(): HasMany
+    {
+        return $this->hasMany(TenantCredit::class);
+    }
+
     /**
      * Scopes
      */

@@ -46,6 +46,10 @@ Route::middleware('auth')->group(function () {
 
         // Subscription management
         Route::get('/', [App\Http\Controllers\SubscriptionController::class, 'index'])->name('index');
+        Route::get('/dashboard', [App\Http\Controllers\SubscriptionController::class, 'dashboard'])->name('dashboard');
+        Route::get('/history', [App\Http\Controllers\SubscriptionController::class, 'history'])->name('history');
+        Route::get('/usage-chart/{feature}', [App\Http\Controllers\SubscriptionController::class, 'usageChart'])->name('usage-chart');
+
         Route::post('/subscribe/{plan}', [App\Http\Controllers\SubscriptionController::class, 'subscribe'])->name('subscribe');
         Route::post('/upgrade/{plan}', [App\Http\Controllers\SubscriptionController::class, 'upgrade'])->name('upgrade');
         Route::post('/downgrade/{plan}', [App\Http\Controllers\SubscriptionController::class, 'downgrade'])->name('downgrade');

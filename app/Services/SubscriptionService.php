@@ -5,12 +5,23 @@ namespace App\Services;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\SubscriptionUsage;
+use App\Models\SubscriptionUsageHistory;
 use App\Models\Tenant;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class SubscriptionService
 {
+    protected SubscriptionAuditService $auditService;
+    protected CreditService $creditService;
+
+    public function __construct(
+        SubscriptionAuditService $auditService,
+        CreditService $creditService
+    ) {
+        $this->auditService = $auditService;
+        $this->creditService = $creditService;
+    }
     /**
      * Create a new subscription for a tenant
      */
@@ -36,6 +47,12 @@ class SubscriptionService
             // Initialize usage limits
             $this->initializeUsageLimits($subscription);
 
+            // Log subscription creation
+            $this->auditService->logCreated($subscription);
+
+            // Record initial usage snapshot
+            SubscriptionUsageHistory::recordSnapshot($subscription);
+
             return $subscription;
         });
     }
@@ -50,18 +67,19 @@ class SubscriptionService
         }
 
         return DB::transaction(function () use ($subscription, $newPlan) {
-            // Calculate prorated amount
-            $proratedAmount = $this->calculateProratedAmount(
-                $subscription,
-                $newPlan
-            );
-
             // Store previous plan
-            $previousPlanId = $subscription->plan_id;
+            $previousPlan = $subscription->plan;
+
+            // Calculate prorated amount using CreditService
+            $proratedAmount = $this->creditService->calculateUpgradeProration(
+                $subscription,
+                $newPlan->price,
+                $previousPlan->price
+            );
 
             // Update subscription immediately
             $subscription->update([
-                'previous_plan_id' => $previousPlanId,
+                'previous_plan_id' => $previousPlan->id,
                 'plan_id' => $newPlan->id,
                 'prorated_amount' => $proratedAmount,
                 'current_period_start' => Carbon::now(),
@@ -73,6 +91,12 @@ class SubscriptionService
 
             // Update usage limits
             $this->syncUsageLimits($subscription);
+
+            // Log upgrade
+            $this->auditService->logUpgraded($subscription, $previousPlan, $proratedAmount);
+
+            // Record usage snapshot
+            SubscriptionUsageHistory::recordSnapshot($subscription);
 
             return $subscription->fresh();
         });
@@ -88,11 +112,16 @@ class SubscriptionService
         }
 
         return DB::transaction(function () use ($subscription, $newPlan) {
+            $currentPlan = $subscription->plan;
+
             // Schedule the plan change for next billing date
             $subscription->update([
                 'scheduled_plan_id' => $newPlan->id,
                 'plan_change_scheduled_for' => $subscription->next_billing_date,
             ]);
+
+            // Log downgrade scheduled
+            $this->auditService->logDowngradeScheduled($subscription, $currentPlan, $newPlan);
 
             return $subscription->fresh();
         });
@@ -103,10 +132,17 @@ class SubscriptionService
      */
     public function cancelScheduledPlanChange(Subscription $subscription): Subscription
     {
+        $scheduledPlan = $subscription->scheduledPlan;
+
         $subscription->update([
             'scheduled_plan_id' => null,
             'plan_change_scheduled_for' => null,
         ]);
+
+        // Log downgrade cancellation
+        if ($scheduledPlan) {
+            $this->auditService->logDowngradeCanceled($subscription, $scheduledPlan);
+        }
 
         return $subscription->fresh();
     }
@@ -127,6 +163,29 @@ class SubscriptionService
                 'ends_at' => $endsAt,
             ]);
 
+            // Calculate and process cancellation credit
+            $credit = null;
+            $creditAmount = null;
+
+            if ($immediately) {
+                $creditAmount = $this->creditService->calculateCancellationCredit($subscription);
+
+                // Log cancellation first to get audit log
+                $auditLog = $this->auditService->logCanceled($subscription, true, $creditAmount);
+
+                // Process credit if applicable
+                if ($creditAmount > 0) {
+                    $credit = $this->creditService->processCancellationCredit(
+                        $subscription,
+                        $auditLog,
+                        true
+                    );
+                }
+            } else {
+                // Log cancellation without credit
+                $this->auditService->logCanceled($subscription, false, null);
+            }
+
             return $subscription->fresh();
         });
     }
@@ -146,6 +205,9 @@ class SubscriptionService
             'ends_at' => null,
         ]);
 
+        // Log resume
+        $this->auditService->logResumed($subscription);
+
         return $subscription->fresh();
     }
 
@@ -155,8 +217,11 @@ class SubscriptionService
     public function renewSubscription(Subscription $subscription): Subscription
     {
         return DB::transaction(function () use ($subscription) {
+            $previousPlan = null;
+
             // Check if there's a scheduled plan change
             if ($subscription->hasPlanChangeScheduled()) {
+                $previousPlan = $subscription->plan;
                 $newPlan = $subscription->scheduledPlan;
 
                 $subscription->update([
@@ -172,6 +237,9 @@ class SubscriptionService
 
                 // Update usage limits for new plan
                 $this->syncUsageLimits($subscription);
+
+                // Log downgrade execution
+                $this->auditService->logDowngraded($subscription, $previousPlan);
             } else {
                 // Regular renewal
                 $subscription->update([
@@ -184,6 +252,12 @@ class SubscriptionService
                 // Reset usage for limits that have reset_at
                 $this->resetPeriodUsage($subscription);
             }
+
+            // Log renewal
+            $this->auditService->logRenewed($subscription, $previousPlan);
+
+            // Record usage snapshot
+            SubscriptionUsageHistory::recordSnapshot($subscription);
 
             return $subscription->fresh();
         });
@@ -203,6 +277,9 @@ class SubscriptionService
             'trial_ends_at' => null,
             'trial_notification_sent' => false,
         ]);
+
+        // Log trial conversion
+        $this->auditService->logTrialConverted($subscription);
 
         return $subscription->fresh();
     }

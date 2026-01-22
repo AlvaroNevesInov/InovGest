@@ -68,6 +68,26 @@ class Tenant extends Model
             ->latest();
     }
 
+    public function credits(): HasMany
+    {
+        return $this->hasMany(TenantCredit::class);
+    }
+
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(SubscriptionAuditLog::class);
+    }
+
+    /**
+     * Get available credits balance
+     */
+    public function getAvailableCreditsBalance(): float
+    {
+        return $this->credits()
+            ->available()
+            ->sum('amount');
+    }
+
     /**
      * Get the onboarding completion percentage.
      */

@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Mail\PlanChangedMail;
 use App\Models\Plan;
 use App\Models\Tenant;
+use App\Models\SubscriptionUsageHistory;
 use App\Services\SubscriptionService;
+use App\Services\SubscriptionAuditService;
+use App\Services\CreditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,10 +18,17 @@ use Inertia\Inertia;
 class SubscriptionController extends Controller
 {
     protected $subscriptionService;
+    protected $auditService;
+    protected $creditService;
 
-    public function __construct(SubscriptionService $subscriptionService)
-    {
+    public function __construct(
+        SubscriptionService $subscriptionService,
+        SubscriptionAuditService $auditService,
+        CreditService $creditService
+    ) {
         $this->subscriptionService = $subscriptionService;
+        $this->auditService = $auditService;
+        $this->creditService = $creditService;
     }
 
     /**
@@ -64,7 +74,9 @@ class SubscriptionController extends Controller
         $tenant = Tenant::findOrFail($validated['tenant_id']);
 
         // Check if user has access to this tenant
-        if (!Auth::user()->hasAccessToTenant($tenant->id)) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user->hasAccessToTenant($tenant->id)) {
             return back()->withErrors(['error' => 'Você não tem acesso a este tenant.']);
         }
 
@@ -282,5 +294,89 @@ class SubscriptionController extends Controller
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erro ao retomar subscrição: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Display subscription history and audit logs
+     */
+    public function history()
+    {
+        $tenantId = session('current_tenant_id');
+
+        if (!$tenantId) {
+            return redirect()->route('tenants.create');
+        }
+
+        $tenant = Tenant::findOrFail($tenantId);
+
+        // Get audit logs
+        $auditLogs = $this->auditService->getTenantAuditLogs($tenantId);
+
+        // Get credits summary
+        $creditsSummary = $this->creditService->getCreditsSummary($tenant);
+
+        return Inertia::render('Subscriptions/History', [
+            'tenant' => $tenant,
+            'auditLogs' => $auditLogs,
+            'creditsSummary' => $creditsSummary,
+        ]);
+    }
+
+    /**
+     * Get usage chart data for a specific feature
+     */
+    public function usageChart(Request $request, string $feature)
+    {
+        $tenantId = session('current_tenant_id');
+
+        if (!$tenantId) {
+            return response()->json(['error' => 'No tenant selected'], 400);
+        }
+
+        $tenant = Tenant::findOrFail($tenantId);
+        $subscription = $tenant->activeSubscription;
+
+        if (!$subscription) {
+            return response()->json(['error' => 'No active subscription'], 400);
+        }
+
+        $days = $request->input('days', 30);
+
+        $chartData = SubscriptionUsageHistory::getChartData($subscription->id, $feature, $days);
+
+        return response()->json($chartData);
+    }
+
+    /**
+     * Display enhanced dashboard with charts
+     */
+    public function dashboard()
+    {
+        $tenantId = session('current_tenant_id');
+
+        if (!$tenantId) {
+            return redirect()->route('tenants.create');
+        }
+
+        $tenant = Tenant::with(['activeSubscription.plan', 'activeSubscription.usage'])->findOrFail($tenantId);
+
+        $subscription = $tenant->activeSubscription;
+        $usageSummary = null;
+        $recentLogs = [];
+        $creditsSummary = null;
+
+        if ($subscription) {
+            $usageSummary = $this->subscriptionService->getUsageSummary($subscription);
+            $recentLogs = $this->auditService->getSubscriptionAuditLogs($subscription->id)->take(5);
+            $creditsSummary = $this->creditService->getCreditsSummary($tenant);
+        }
+
+        return Inertia::render('Subscriptions/Dashboard', [
+            'tenant' => $tenant,
+            'subscription' => $subscription,
+            'usageSummary' => $usageSummary,
+            'recentLogs' => $recentLogs,
+            'creditsSummary' => $creditsSummary,
+        ]);
     }
 }

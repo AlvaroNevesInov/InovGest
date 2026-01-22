@@ -92,9 +92,14 @@ const resumeSubscription = () => {
                         <h1 class="text-3xl font-bold">Minha Subscrição</h1>
                         <p class="text-gray-600 dark:text-gray-400">Gerir o seu plano e faturação</p>
                     </div>
-                    <Button variant="outline" @click="router.visit(route('subscriptions.plans'))">
-                        Ver Todos os Planos
-                    </Button>
+                    <div class="flex gap-2">
+                        <Button variant="outline" @click="router.visit(route('subscriptions.history'))">
+                            Ver Histórico
+                        </Button>
+                        <Button variant="outline" @click="router.visit(route('subscriptions.plans'))">
+                            Ver Todos os Planos
+                        </Button>
+                    </div>
                 </div>
 
                 <!-- No Subscription -->

@@ -140,7 +140,7 @@ const showingNavigationDropdown = ref(false);
 
                         <div class="hidden sm:ms-6 sm:flex sm:items-center">
                             <!-- Company Selector -->
-                            <div class="relative ms-3" v-if="$page.props.tenant.companies.length > 0">
+                            <div class="relative ms-3" v-if="$page.props.tenant?.companies && $page.props.tenant.companies.length > 0">
                                 <Dropdown align="right" width="48">
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
@@ -151,7 +151,7 @@ const showingNavigationDropdown = ref(false);
                                                 <svg class="-ms-1 me-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
                                                 </svg>
-                                                {{ $page.props.tenant.current_company?.name || 'Selecionar Empresa' }}
+                                                {{ $page.props.tenant?.current_company?.name || 'Selecionar Empresa' }}
 
                                                 <svg
                                                     class="-me-0.5 ms-2 h-4 w-4"
@@ -174,15 +174,15 @@ const showingNavigationDropdown = ref(false);
                                             Empresas Disponíveis
                                         </div>
                                         <DropdownLink
-                                            v-for="company in $page.props.tenant.companies"
+                                            v-for="company in ($page.props.tenant?.companies || [])"
                                             :key="company.id"
                                             :href="route('companies.switch', company.id)"
                                             method="post"
                                             as="button"
-                                            :class="{'bg-gray-100 dark:bg-gray-700': company.id === $page.props.tenant.current_company?.id}"
+                                            :class="{'bg-gray-100 dark:bg-gray-700': company.id === $page.props.tenant?.current_company?.id}"
                                         >
                                             <div class="flex items-center">
-                                                <svg v-if="company.id === $page.props.tenant.current_company?.id" class="mr-2 h-4 w-4 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <svg v-if="company.id === $page.props.tenant?.current_company?.id" class="mr-2 h-4 w-4 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
                                                 </svg>
                                                 <span>{{ company.name }}</span>
@@ -211,7 +211,7 @@ const showingNavigationDropdown = ref(false);
                                                 type="button"
                                                 class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-300"
                                             >
-                                                {{ $page.props.auth.user.name }}
+                                                {{ $page.props.auth?.user?.name || 'Utilizador' }}
 
                                                 <svg
                                                     class="-me-0.5 ms-2 h-4 w-4"
@@ -462,10 +462,10 @@ const showingNavigationDropdown = ref(false);
                             <div
                                 class="text-base font-medium text-gray-800 dark:text-gray-200"
                             >
-                                {{ $page.props.auth.user.name }}
+                                {{ $page.props.auth?.user?.name || 'Utilizador' }}
                             </div>
                             <div class="text-sm font-medium text-gray-500">
-                                {{ $page.props.auth.user.email }}
+                                {{ $page.props.auth?.user?.email || '' }}
                             </div>
                         </div>
 

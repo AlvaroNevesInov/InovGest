@@ -229,6 +229,12 @@ class TenantOnboardingController extends Controller
             return redirect()->route('tenants.create');
         }
 
+        // Ensure checklist exists for this tenant
+        $checklistCount = OnboardingChecklist::where('tenant_id', $tenant->id)->count();
+        if ($checklistCount === 0) {
+            OnboardingChecklist::createDefaultTasksForTenant($tenant->id);
+        }
+
         $progress = $this->onboardingService->getOnboardingProgress($tenant->id);
 
         return Inertia::render('Onboarding/Checklist', [

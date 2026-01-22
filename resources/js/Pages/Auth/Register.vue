@@ -11,6 +11,7 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
+    company_name: '',
 });
 
 const submit = () => {
@@ -54,6 +55,24 @@ const submit = () => {
                 />
 
                 <InputError class="mt-2" :message="form.errors.email" />
+            </div>
+
+            <div class="mt-4">
+                <InputLabel for="company_name" value="Nome da Empresa (Opcional)" />
+
+                <TextInput
+                    id="company_name"
+                    type="text"
+                    class="mt-1 block w-full"
+                    v-model="form.company_name"
+                    autocomplete="organization"
+                    placeholder="Ex: InovGest Lda"
+                />
+
+                <InputError class="mt-2" :message="form.errors.company_name" />
+                <p class="mt-1 text-xs text-gray-500">
+                    Este será o nome do seu tenant. Se não preencher, usaremos o seu nome.
+                </p>
             </div>
 
             <div class="mt-4">

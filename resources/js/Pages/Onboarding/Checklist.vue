@@ -9,12 +9,12 @@
                 </h2>
                 <div class="flex items-center gap-2">
                     <span class="text-sm text-gray-600">
-                        {{ progress.completed_tasks }} de {{ progress.total_tasks }} completas
+                        {{ progress?.completed_tasks || 0 }} de {{ progress?.total_tasks || 0 }} completas
                     </span>
                     <div class="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div
                             class="h-full bg-green-600 transition-all duration-500"
-                            :style="{ width: `${progress.completion_percentage}%` }"
+                            :style="{ width: `${progress?.completion_percentage || 0}%` }"
                         ></div>
                     </div>
                 </div>
@@ -36,7 +36,7 @@
                         </div>
                         <div class="text-right">
                             <div class="text-3xl font-bold text-gray-900">
-                                {{ progress.completion_percentage }}%
+                                {{ progress?.completion_percentage || 0 }}%
                             </div>
                             <div class="text-xs text-gray-500 mt-1">
                                 Completo
@@ -48,7 +48,7 @@
                     <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
                         <div
                             class="h-full bg-gradient-to-r from-blue-600 to-green-600 transition-all duration-500"
-                            :style="{ width: `${progress.completion_percentage}%` }"
+                            :style="{ width: `${progress?.completion_percentage || 0}%` }"
                         ></div>
                     </div>
 
@@ -56,7 +56,7 @@
                     <div class="grid grid-cols-3 gap-4 mt-6">
                         <div class="text-center p-3 bg-blue-50 rounded-lg">
                             <div class="text-2xl font-bold text-blue-600">
-                                {{ progress.tasks.filter(t => t.is_required && !t.is_completed).length }}
+                                {{ requiredPendingCount }}
                             </div>
                             <div class="text-xs text-gray-600 mt-1">
                                 Obrigatórias Pendentes
@@ -64,7 +64,7 @@
                         </div>
                         <div class="text-center p-3 bg-green-50 rounded-lg">
                             <div class="text-2xl font-bold text-green-600">
-                                {{ progress.completed_tasks }}
+                                {{ progress?.completed_tasks || 0 }}
                             </div>
                             <div class="text-xs text-gray-600 mt-1">
                                 Completadas
@@ -72,7 +72,7 @@
                         </div>
                         <div class="text-center p-3 bg-gray-50 rounded-lg">
                             <div class="text-2xl font-bold text-gray-600">
-                                {{ progress.tasks.filter(t => !t.is_required && !t.is_completed).length }}
+                                {{ optionalPendingCount }}
                             </div>
                             <div class="text-xs text-gray-600 mt-1">
                                 Opcionais Pendentes
@@ -90,6 +90,9 @@
                         Tarefas Obrigatórias
                     </h3>
                     <div class="space-y-3">
+                        <div v-if="requiredTasks.length === 0" class="text-center py-8 text-gray-500">
+                            <p>Não existem tarefas obrigatórias.</p>
+                        </div>
                         <div
                             v-for="task in requiredTasks"
                             :key="task.id"
@@ -154,6 +157,9 @@
                         Tarefas Opcionais
                     </h3>
                     <div class="space-y-3">
+                        <div v-if="optionalTasks.length === 0" class="text-center py-8 text-gray-500">
+                            <p>Não existem tarefas opcionais.</p>
+                        </div>
                         <div
                             v-for="task in optionalTasks"
                             :key="task.id"
@@ -239,11 +245,31 @@ const props = defineProps({
 const processing = ref(false);
 
 const requiredTasks = computed(() => {
+    if (!props.progress || !props.progress.tasks || !Array.isArray(props.progress.tasks)) {
+        return [];
+    }
     return props.progress.tasks.filter(task => task.is_required);
 });
 
 const optionalTasks = computed(() => {
+    if (!props.progress || !props.progress.tasks || !Array.isArray(props.progress.tasks)) {
+        return [];
+    }
     return props.progress.tasks.filter(task => !task.is_required);
+});
+
+const requiredPendingCount = computed(() => {
+    if (!props.progress || !props.progress.tasks || !Array.isArray(props.progress.tasks)) {
+        return 0;
+    }
+    return props.progress.tasks.filter(t => t.is_required && !t.is_completed).length;
+});
+
+const optionalPendingCount = computed(() => {
+    if (!props.progress || !props.progress.tasks || !Array.isArray(props.progress.tasks)) {
+        return 0;
+    }
+    return props.progress.tasks.filter(t => !t.is_required && !t.is_completed).length;
 });
 
 const toggleTask = (taskId) => {

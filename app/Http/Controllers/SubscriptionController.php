@@ -36,17 +36,15 @@ class SubscriptionController extends Controller
      */
     public function index()
     {
-        $tenantId = session('current_tenant_id');
-
-        if (!$tenantId) {
-            return redirect()->route('tenants.create');
-        }
-
-        $tenant = Tenant::with(['activeSubscription.plan', 'activeSubscription.scheduledPlan'])->find($tenantId);
+        $user = Auth::user();
+        $tenant = $user->currentTenant;
 
         if (!$tenant) {
-            return redirect()->route('tenants.create');
+            return redirect()->route('tenants.create')
+                ->with('error', 'Por favor, crie um tenant primeiro.');
         }
+
+        $tenant->load(['activeSubscription.plan', 'activeSubscription.scheduledPlan']);
 
         $subscription = $tenant->activeSubscription;
         $usageSummary = null;
@@ -320,6 +318,23 @@ class SubscriptionController extends Controller
             'auditLogs' => $auditLogs,
             'creditsSummary' => $creditsSummary,
         ]);
+    }
+
+
+    /**
+     * Get the current tenant for the authenticated user.
+     * Redirects to tenant creation if no tenant exists.
+     */
+    private function getCurrentTenant()
+    {
+        $user = Auth::user();
+        $tenant = $user->currentTenant;
+
+        if (!$tenant) {
+            abort(redirect()->route('tenants.create')->with('error', 'Por favor, crie um tenant primeiro.'));
+        }
+
+        return $tenant;
     }
 
     /**
